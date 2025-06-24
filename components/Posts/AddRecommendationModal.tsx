@@ -1,10 +1,6 @@
-// import {
-//   // CloseOutline,
-//   // DownOutline, // 下拉箭头
-//   // UploadOutline, // 上传图标
-// } from 'antd-mobile-icons'; // 导入需要的图标组件
 import { Picker } from '@react-native-picker/picker';
-import React, { useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,21 +9,46 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View
 } from 'react-native';
+import TagList from './components/TagComponent';
 
 type Props = {
   isOpenRec: boolean,
   onCloseRec: () => void
 };
 
+type formDataType = {
+  name: string;
+  type: string;
+  category: string;
+  location: string;
+  rating: string;
+  priceLevel: string;
+  description: string;
+  tags: string;
+  url: string;
+  image?: any;
+};
+
 const { width, height } = Dimensions.get('window');
+
+// 请求媒体库权限
+useEffect(() => {
+  (async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      // Alert.alert('需要媒体库权限才能选择图片');
+      Alert.alert('Media library permission is required to select images');
+    }
+  })();
+}, []);
 
 // 推荐类型数据
 const recommendationTypes = [
@@ -47,14 +68,14 @@ const ratingOptions = [
 
 // 价格水平数据
 const priceLevels = [
-  { label: 'Budget', value: '1' },
+  { label: '$Budget', value: '1' },
   { label: '$$Moderate', value: '2' },
   { label: '$$$Expensive', value: '3' },
   { label: '$$$$Very Expensive', value: '4' },
 ];
 
 const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<formDataType>({
     name: '',
     type: 'food',
     category: '',
@@ -64,14 +85,12 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
     description: '',
     tags: '',
     url: '',
-    image: null,
+    image: '',
   });
 
+  const [selectedTags, setSelectedTags] =  useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pickedImage, setPickedImage] = useState(null);
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-  const [showRatingDropdown, setShowRatingDropdown] = useState(false);
-  const [showPriceDropdown, setShowPriceDropdown] = useState(false);
+  const [pickedImage, setPickedImage] = useState<any>(null);
 
   // 处理表单输入变化
   const handleInputChange = (field :any, value :any) => {
@@ -81,36 +100,47 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
   // 处理类型选择
   const handleTypeSelect = (value :any) => {
     setFormData({ ...formData, type: value });
-    setShowTypeDropdown(false);
   };
 
   // 处理评分选择
-  const handleRatingSelect = (value :any) => {
+  const handleRatingChange = (value:any) => {
     setFormData({ ...formData, rating: value });
-    setShowRatingDropdown(false);
-  };
+  }
 
   // 处理价格水平选择
-  const handlePriceSelect = (value : any) => {
+  const handlePriceChange =  (value : any) => {
     setFormData({ ...formData, priceLevel: value });
-    setShowPriceDropdown(false);
-  };
+  }
 
   // 处理图片上传
   const handleImageUpload = async () => {
-    // 在实际应用中，这里会调用相机或相册API
-    // 简化示例，这里仅模拟图片选择
-    // setPickedImage({ uri: 'https://picsum.photos/400/300?random=' + Date.now() });
-    // setFormData({ ...formData, image: { uri: 'https://picsum.photos/400/300?random=' + Date.now() } });
+      let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+    console.log('result is',result)
+    if (!result.canceled) {
+      setPickedImage(result.assets[0] || '')
+      setFormData({ ...formData, image: result.assets[0] || '' });
+    }
   };
 
   // 处理标签添加
   const handleAddTag = () => {
+    if (selectedTags.includes(formData.tags)) {
+      Alert.alert('Error', 'Tag already exists');
+      return
+    }
     if (formData.tags.trim() !== '') {
       // 在实际应用中，这里会将标签添加到数组中
-      Alert.alert('Tag Added', formData.tags);
       setFormData({ ...formData, tags: '' });
+      setSelectedTags([...selectedTags, formData.tags])
     }
+  };
+  // 处理标签删除
+  const handleRemoveTag = (tagToRemove :any) => {
+    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
   };
 
   // 验证表单
@@ -127,7 +157,6 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
     if (!validateForm()) return;
     
     setIsSubmitting(true);
-    
     try {
       // 在实际应用中，这里会将数据发送到服务器
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -141,12 +170,8 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
     }
   };
 
-  const handleRatingChange = () => {
 
-  }
-  const handlePriceChange = () => {
-    
-  }
+
 
   return (
     <Modal
@@ -156,12 +181,12 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
       onRequestClose={onCloseRec}
       hardwareAccelerated={true}
     >
-      <TouchableWithoutFeedback onPress={onCloseRec}>
+      <Pressable onPress={onCloseRec}>
         <View style={styles.modalOverlay} />
-      </TouchableWithoutFeedback>
+      </Pressable>
       
       <View style={styles.modalContainer}>
-        <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+        <Pressable onPress={(e) => e.stopPropagation()}>
           <View style={styles.modalContent}>
             {/* 头部区域 */}
             <View style={styles.header}>
@@ -174,7 +199,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
               style={styles.closeButton}
               onPress={onCloseRec}
             >
-              {/* <CloseOutline fontSize={24} color={isOpenRec ? '#5E6AD2' : '#6B7280'} /> */}
+              <Text>X</Text>
             </TouchableOpacity>
             
             {/* 表单内容 */}
@@ -230,7 +255,6 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
                         placeholder="e.g., Italian, Museum"
                         value={formData.category}
                         onChangeText={(text) => handleInputChange('category', text)}
-                        
                         placeholderTextColor="#6B7280"
                       />
                     </View>
@@ -244,7 +268,8 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
                       placeholder="City, Country"
                       value={formData.location}
                       onChangeText={(text) => handleInputChange('location', text)}
-                      
+                      multiline={true} // 启用多行输入
+                      numberOfLines={4} // 默认显示的行数
                       placeholderTextColor="#6B7280"
                     />
                   </View>
@@ -252,7 +277,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
                   {/* 评分和价格水平 */}
                   <View style={styles.gridTwoColumns}>
                     {/* 评分选择 */}
-                    <View style={styles.formGroup}>
+                    <View style={[styles.formGroup, styles.halfWidth]}>
                       <Text style={styles.label}>Rating</Text>
                       <Picker
                         selectedValue={formData.rating}
@@ -270,7 +295,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
                     </View>
                     
                     {/* 价格水平选择 */}
-                    <View style={styles.formGroup}>
+                    <View style={[styles.formGroup, styles.halfWidth]}>
                       <Text style={styles.label}>Price Level</Text>
                       <Picker
                         selectedValue={formData.priceLevel}
@@ -342,6 +367,10 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
                         <Text style={styles.addTagText}>Add</Text>
                       </TouchableOpacity>
                     </View>
+                      {/* 标签展示 */}
+                    <View style={styles.formGroup}>
+                        { selectedTags.length > 0 && <TagList selectedTags={selectedTags} handleRemoveTag={handleRemoveTag}  /> }
+                    </View>
                   </View>
                   
                   {/* 网站URL */}
@@ -381,7 +410,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
               </KeyboardAvoidingView>
             </ScrollView>
           </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
       </View>
     </Modal>
   );
@@ -391,18 +420,18 @@ const styles = StyleSheet.create({
   modalOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 40,
+    zIndex: 2,
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 50,
+    zIndex: 3,
   },
   modalContent: {
     position: 'relative',
-    width: '90%',
-    maxWidth: 500,
+    width: '100%',
+    maxWidth: 600,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     shadowColor: '#000',
@@ -416,10 +445,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
-    zIndex: 10,
+    zIndex: 3,
     padding: 8,
     borderRadius: 6,
-    backgroundColor: '#5E6AD2',
     opacity: 0.7,
   },
   header: {
@@ -462,7 +490,8 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   input: {
-    height: 40,
+    height: 50,
+    marginTop:10,
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 8,
@@ -481,7 +510,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   halfWidth:{
-    width:'50%'
+    width:'49%'
   },
   picker: {
     height: 50,
@@ -543,6 +572,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
+    height: 40,
   },
   addTagText: {
     color: '#FFFFFF',
