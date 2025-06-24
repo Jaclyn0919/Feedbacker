@@ -1,8 +1,9 @@
-import {
-  CloseOutline,
-  DownlandOutline, // 下拉箭头
-  UploadOutline, // 上传图标
-} from 'antd-mobile-icons'; // 导入需要的图标组件
+// import {
+//   // CloseOutline,
+//   // DownOutline, // 下拉箭头
+//   // UploadOutline, // 上传图标
+// } from 'antd-mobile-icons'; // 导入需要的图标组件
+import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -20,6 +21,11 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
+
+type Props = {
+  isOpenRec: boolean,
+  onCloseRec: () => void
+};
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,7 +53,7 @@ const priceLevels = [
   { label: '$$$$Very Expensive', value: '4' },
 ];
 
-const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
+const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
   const [formData, setFormData] = useState({
     name: '',
     type: 'food',
@@ -68,24 +74,24 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
   const [showPriceDropdown, setShowPriceDropdown] = useState(false);
 
   // 处理表单输入变化
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field :any, value :any) => {
     setFormData({ ...formData, [field]: value });
   };
 
   // 处理类型选择
-  const handleTypeSelect = (value) => {
+  const handleTypeSelect = (value :any) => {
     setFormData({ ...formData, type: value });
     setShowTypeDropdown(false);
   };
 
   // 处理评分选择
-  const handleRatingSelect = (value) => {
+  const handleRatingSelect = (value :any) => {
     setFormData({ ...formData, rating: value });
     setShowRatingDropdown(false);
   };
 
   // 处理价格水平选择
-  const handlePriceSelect = (value) => {
+  const handlePriceSelect = (value : any) => {
     setFormData({ ...formData, priceLevel: value });
     setShowPriceDropdown(false);
   };
@@ -94,8 +100,8 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
   const handleImageUpload = async () => {
     // 在实际应用中，这里会调用相机或相册API
     // 简化示例，这里仅模拟图片选择
-    setPickedImage({ uri: 'https://picsum.photos/400/300?random=' + Date.now() });
-    setFormData({ ...formData, image: { uri: 'https://picsum.photos/400/300?random=' + Date.now() } });
+    // setPickedImage({ uri: 'https://picsum.photos/400/300?random=' + Date.now() });
+    // setFormData({ ...formData, image: { uri: 'https://picsum.photos/400/300?random=' + Date.now() } });
   };
 
   // 处理标签添加
@@ -110,7 +116,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
   // 验证表单
   const validateForm = () => {
     if (!formData.name || !formData.category || !formData.location || !formData.description) {
-      Alert.alert('Form Error', 'Please fill in all required fields');
+      Alert.alert('Form Error', 'Please fill in all  fields');
       return false;
     }
     return true;
@@ -134,6 +140,13 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
       setIsSubmitting(false);
     }
   };
+
+  const handleRatingChange = () => {
+
+  }
+  const handlePriceChange = () => {
+    
+  }
 
   return (
     <Modal
@@ -161,7 +174,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
               style={styles.closeButton}
               onPress={onCloseRec}
             >
-              <CloseOutline fontSize={24} color={isOpenRec ? '#5E6AD2' : '#6B7280'} />
+              {/* <CloseOutline fontSize={24} color={isOpenRec ? '#5E6AD2' : '#6B7280'} /> */}
             </TouchableOpacity>
             
             {/* 表单内容 */}
@@ -184,7 +197,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
                       placeholder="Enter place name"
                       value={formData.name}
                       onChangeText={(text) => handleInputChange('name', text)}
-                      required
+                      
                       placeholderTextColor="#6B7280"
                     />
                   </View>
@@ -192,42 +205,32 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
                   {/* 类型和分类 */}
                   <View style={styles.gridTwoColumns}>
                     {/* 类型选择 */}
-                    <View style={styles.formGroup}>
+                    <View style={[styles.formGroup, styles.halfWidth]}>
                       <Text style={styles.label}>Type *</Text>
-                      <TouchableOpacity
-                        style={styles.dropdown}
-                        onPress={() => setShowTypeDropdown(!showTypeDropdown)}
+                      <Picker
+                        selectedValue={formData.type || 'food'}
+                        style={styles.picker}
+                        onValueChange={(itemValue) => handleTypeSelect(itemValue)}
                       >
-                        <View style={styles.dropdownContent}>
-                          <Text style={styles.dropdownText}>{recommendationTypes.find(t => t.value === formData.type)?.label || 'Food'}</Text>
-                          <DownlandOutline fontSize={20} color="#9CA3AF" />
-                        </View>
-                        
-                        {showTypeDropdown && (
-                          <View style={styles.dropdownMenu}>
-                            {recommendationTypes.map(type => (
-                              <TouchableOpacity
-                                key={type.value}
-                                style={[styles.dropdownMenuItem, { borderBottomWidth: 0.5, borderBottomColor: '#E5E7EB' }]}
-                                onPress={() => handleTypeSelect(type.value)}
-                              >
-                                <Text style={styles.dropdownMenuItemText}>{type.label}</Text>
-                              </TouchableOpacity>
-                            ))}
-                          </View>
-                        )}
-                      </TouchableOpacity>
+                        {recommendationTypes.map(type => (
+                          <Picker.Item 
+                            label={type.label} 
+                            value={type.value} 
+                            key={type.value} 
+                          />
+                        ))}
+                      </Picker>
                     </View>
                     
                     {/* 分类输入 */}
-                    <View style={styles.formGroup}>
+                    <View style={[styles.formGroup, styles.halfWidth]}>
                       <Text style={styles.label}>Category *</Text>
                       <TextInput
                         style={styles.input}
                         placeholder="e.g., Italian, Museum"
                         value={formData.category}
                         onChangeText={(text) => handleInputChange('category', text)}
-                        required
+                        
                         placeholderTextColor="#6B7280"
                       />
                     </View>
@@ -241,7 +244,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
                       placeholder="City, Country"
                       value={formData.location}
                       onChangeText={(text) => handleInputChange('location', text)}
-                      required
+                      
                       placeholderTextColor="#6B7280"
                     />
                   </View>
@@ -251,59 +254,37 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
                     {/* 评分选择 */}
                     <View style={styles.formGroup}>
                       <Text style={styles.label}>Rating</Text>
-                      <TouchableOpacity
-                        style={styles.dropdown}
-                        onPress={() => setShowRatingDropdown(!showRatingDropdown)}
+                      <Picker
+                        selectedValue={formData.rating}
+                        onValueChange={handleRatingChange}
+                        style={styles.picker}
                       >
-                        <View style={styles.dropdownContent}>
-                          <Text style={styles.dropdownText}>{ratingOptions.find(r => r.value === formData.rating)?.label || '4 Stars'}</Text>
-                          <DownlandOutline fontSize={20} color="#9CA3AF" />
-                        </View>
-                        
-                        {showRatingDropdown && (
-                          <View style={styles.dropdownMenu}>
-                            {ratingOptions.map(rating => (
-                              <TouchableOpacity
-                                key={rating.value}
-                                style={[styles.dropdownMenuItem, { borderBottomWidth: 0.5, borderBottomColor: '#E5E7EB' }]}
-                                onPress={() => handleRatingSelect(rating.value)}
-                              >
-                                <Text style={styles.dropdownMenuItemText}>{rating.label}</Text>
-                              </TouchableOpacity>
-                            ))}
-                          </View>
-                        )}
-                      </TouchableOpacity>
+                        {ratingOptions.map(option => (
+                          <Picker.Item 
+                            key={option.value} 
+                            label={option.label} 
+                            value={option.value} 
+                          />
+                        ))}
+                      </Picker>
                     </View>
                     
                     {/* 价格水平选择 */}
                     <View style={styles.formGroup}>
                       <Text style={styles.label}>Price Level</Text>
-                      <TouchableOpacity
-                        style={styles.dropdown}
-                        onPress={() => setShowPriceDropdown(!showPriceDropdown)}
+                      <Picker
+                        selectedValue={formData.priceLevel}
+                        onValueChange={handlePriceChange}
+                        style={styles.picker}
                       >
-                        <View style={styles.dropdownContent}>
-                          <Text style={styles.dropdownText}>
-                            {priceLevels.find(p => p.value === formData.priceLevel)?.label || '$$Moderate'}
-                          </Text>
-                          <DownlandOutline fontSize={20} color="#9CA3AF" />
-                        </View>
-                        
-                        {showPriceDropdown && (
-                          <View style={styles.dropdownMenu}>
-                            {priceLevels.map(price => (
-                              <TouchableOpacity
-                                key={price.value}
-                                style={[styles.dropdownMenuItem, { borderBottomWidth: 0.5, borderBottomColor: '#E5E7EB' }]}
-                                onPress={() => handlePriceSelect(price.value)}
-                              >
-                                <Text style={styles.dropdownMenuItemText}>{price.label}</Text>
-                              </TouchableOpacity>
-                            ))}
-                          </View>
-                        )}
-                      </TouchableOpacity>
+                        {priceLevels.map(option => (
+                          <Picker.Item 
+                            key={option.value} 
+                            label={option.label} 
+                            value={option.value} 
+                          />
+                        ))}
+                      </Picker>
                     </View>
                   </View>
                   
@@ -317,7 +298,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
                       onChangeText={(text) => handleInputChange('description', text)}
                       multiline
                       numberOfLines={4}
-                      required
+                      
                       placeholderTextColor="#6B7280"
                     />
                   </View>
@@ -330,7 +311,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
                         style={styles.uploadButton}
                         onPress={handleImageUpload}
                       >
-                        <UploadOutline fontSize={20} style={styles.uploadIcon} />
+                        {/* <UploadOutline fontSize={20} style={styles.uploadIcon} /> */}
                         <Text style={styles.uploadText}>Upload Image</Text>
                       </TouchableOpacity>
                       {pickedImage && (
@@ -390,7 +371,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
-                        <ActivityIndicator fontSize="small" color="white" />
+                        <ActivityIndicator size="small" color="white" />
                       ) : (
                         <Text style={styles.saveButtonText}>Save Recommendation</Text>
                       )}
@@ -430,7 +411,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
     overflow: 'hidden',
-    animation: 'modalAnimation',
   },
   closeButton: {
     position: 'absolute',
@@ -500,49 +480,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  dropdown: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
+  halfWidth:{
+    width:'50%'
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    color: '#333',
+    marginVertical: 10,
     backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-  },
-  dropdownContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dropdownText: {
-    fontSize: 14,
-    color: '#1F2937',
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 48,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 100,
-  },
-  dropdownMenuItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  dropdownMenuItemText: {
-    fontSize: 14,
-    color: '#1F2937',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 15,
   },
   imageUploadContainer: {
     flexDirection: 'row',

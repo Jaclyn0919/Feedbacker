@@ -1,5 +1,5 @@
 // Posts.js
-import AddRecommendationModal from '@/components/Posts/AddRecommendationModal ';
+import AddRecommendationModal from '@/components/Posts/AddRecommendationModal';
 import React, { useState } from 'react';
 import {
   SafeAreaView,
