@@ -1,7 +1,7 @@
 // Posts.js
 import AddRecommendationModal from '@/components/Posts/AddRecommendationModal';
 import RecommendationCard from '@/components/Posts/RecommendationCard';
-
+import { post } from '@/utils/http';
 import React, { useState } from 'react';
 import {
   SafeAreaView,
@@ -32,6 +32,15 @@ const Index = () => {
       userRating: 0,
       userComent:'This place is amazing!',
     }];
+
+  const getList = () => {
+    console.log('getList exe')
+    post('/api/posts/list').then(res => {
+      console.log(res)
+    })
+  }  
+
+  // getList()
 
   const onCloseRec = () => {
     setIsOpenRec(false)

@@ -6,13 +6,14 @@ import { getToken } from './auth';
 
 // 创建axios实例
 const service = axios.create({
-  baseURL: 'http://13.210.204.61:8080/', 
+  baseURL: 'http://13.210.204.61/', 
   timeout: 10000, 
 });
 
 // 请求拦截器
 service.interceptors.request.use(
   async (config) => {
+    console.log('~~~~~ service.interceptors.request exe',config)
     const token = await getToken();
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
@@ -29,6 +30,7 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   (response) => {
+    console.log('axios response is',response)
     const res = response.data;
     // 根据业务需求处理响应
     if (res.code !== 200) {
@@ -39,6 +41,7 @@ service.interceptors.response.use(
     }
   },
   (error) => {
+    console.log('axios error is',error)
     Alert.alert('网络错误', '请求失败，请稍后重试');
     return Promise.reject(error);
   }

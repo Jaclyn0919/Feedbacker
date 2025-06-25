@@ -39,17 +39,6 @@ type formDataType = {
 
 const { width, height } = Dimensions.get('window');
 
-// 请求媒体库权限
-useEffect(() => {
-  (async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      // Alert.alert('需要媒体库权限才能选择图片');
-      Alert.alert('Media library permission is required to select images');
-    }
-  })();
-}, []);
-
 // 推荐类型数据
 const recommendationTypes = [
   { label: 'Food', value: 'food' },
@@ -170,7 +159,16 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
     }
   };
 
-
+  // 请求媒体库权限
+useEffect(() => {
+  (async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      // Alert.alert('需要媒体库权限才能选择图片');
+      Alert.alert('Media library permission is required to select images');
+    }
+  })();
+}, []);
 
 
   return (
@@ -430,8 +428,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     position: 'relative',
-    width: '100%',
-    maxWidth: 600,
+    width: '90%',
+    maxWidth: 400,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     shadowColor: '#000',
