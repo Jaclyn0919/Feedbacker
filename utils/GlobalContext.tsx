@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { get } from './http'
 
 type User = {
     userId: string,
@@ -46,20 +45,7 @@ export const GlobalContextProvider = ({children}: {children: React.ReactNode}) =
     const [refreshPostsCnt, setRefreshPostsCnt] = useState(0)
 
     const getUserInfo = async () => {
-        try {
-            const user = await get()
-            if (user) {
-                setUser(user)
-            }
-        } catch (error) {
-            console.log(error)
-            setUser({
-                userId: '',
-                displayName: "",
-                email: "",
-                avatarUrl: ""
-            })
-        }
+        return
     }
 
     useEffect(() => {
