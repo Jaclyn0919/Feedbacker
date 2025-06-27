@@ -14,7 +14,7 @@ const service = axios.create({
 service.interceptors.request.use(
   async (config) => {
     console.log('~~~~~ service.interceptors.request exe',config)
-    const token = await getToken();
+    const token = await getToken() || 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiZXhwIjoxNzUwODc0Mjk3fQ.sbeM6FWcGULDSgBJTQx_HbqPhHlNXAfsVIOerTg5V3c';
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }

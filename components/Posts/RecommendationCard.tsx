@@ -1,12 +1,12 @@
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import {
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // 定义推荐卡片的props类型
@@ -55,7 +55,7 @@ const RecommendationCard = ({
   { label: '3 Stars', value: '3' },
   { label: '4 Stars', value: '4' },
   { label: '5 Stars', value: '5' },
-];
+  ];
 
   // 渲染星级评分
   const renderRatingStars = (rating: number) => {

@@ -1,3 +1,4 @@
+import { get } from '@/utils/http';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
@@ -19,19 +20,13 @@ import {
 } from 'react-native';
 import TagList from './components/TagComponent';
 
-type Props = {
-  isOpenRec: boolean,
-  onCloseRec: () => void
-};
-
 type formDataType = {
   name: string;
   type: string;
-  category: string;
   location: string;
-  rating: string;
+  score: string;
   priceLevel: string;
-  description: string;
+  content: string;
   tags: string;
   url: string;
   image?: any;
@@ -63,37 +58,74 @@ const priceLevels = [
   { label: '$$$$Very Expensive', value: '4' },
 ];
 
-const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
+const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
   const [formData, setFormData] = useState<formDataType>({
     name: '',
     type: 'food',
-    category: '',
     location: '',
-    rating: '4',
+    score: '4',
     priceLevel: '2',
-    description: '',
+    content: '',
     tags: '',
     url: '',
     image: '',
   });
-
   const [selectedTags, setSelectedTags] =  useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pickedImage, setPickedImage] = useState<any>(null);
+  const [merchantId, setMerchantId] = useState<any>({});
+  const [merchantList,setMerchantList] = useState<any>([]);
+  const [circleId, setCircleId] = useState<any>([]);
+  const [circleList, setCircleList] = useState<any>([]);
 
+  let merchantItem:any = null
+  const getMechantsList = () => {
+    console.log('getMechantsList exe',formData.name)
+    get('/api/merchants').then(res => {
+      setMerchantList(res.data)
+    })
+  }
+
+  const getCircleList = () => {
+    get('/api/circles').then(res => {
+      setCircleList(res.data)
+    })
+  }
   // 处理表单输入变化
   const handleInputChange = (field :any, value :any) => {
     setFormData({ ...formData, [field]: value });
   };
 
   // 处理类型选择
+  const handleSelectMechant = (value: any) => {
+    merchantItem = getMechantById(value)
+    setFormData({ ...formData, location: merchantItem?.address })
+    setMerchantId(value)
+  };
+
+  const getMechantById = (id = null) => {
+    if (id) {
+      return merchantList.find(v => v.id === id)
+    } else {
+      return merchantList.find(v => v.id === merchantId)
+     }
+  }
+
+  const handleSelectCircle = (value :any) => {
+    setCircleId(value)
+  };
+
+  const getCircleById = () => {
+    return circleList.find(v => v.id === circleId)
+  }
+ 
   const handleTypeSelect = (value :any) => {
     setFormData({ ...formData, type: value });
   };
 
   // 处理评分选择
   const handleRatingChange = (value:any) => {
-    setFormData({ ...formData, rating: value });
+    setFormData({ ...formData, score: value });
   }
 
   // 处理价格水平选择
@@ -134,7 +166,12 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
 
   // 验证表单
   const validateForm = () => {
-    if (!formData.name || !formData.category || !formData.location || !formData.description) {
+     merchantItem = getMechantById()
+    if (!Object.values(merchantItem).length) {
+      Alert.alert('Form Error', 'Please choose a merchant');
+      return false
+    }
+    if (!formData.name || !formData.location || !formData.content) {
       Alert.alert('Form Error', 'Please fill in all  fields');
       return false;
     }
@@ -143,13 +180,27 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:Props) => {
 
   // 处理表单提交
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    // if (!validateForm()) return;
     
     setIsSubmitting(true);
     try {
       // 在实际应用中，这里会将数据发送到服务器
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      (formData);
+      const params = {
+        name: merchantItem?.name,
+        address: merchantItem?.address,
+        latitude: merchantItem?.latitude,
+        longitude: merchantItem?.longitude,
+        externalId: merchantItem?.externalId,
+        circleId: getCircleById()?.id,
+        content:formData.content,
+        score: formData.score,
+        tags: selectedTags,
+        type: formData.type,
+        priceLevel: formData.priceLevel,
+        url: formData.url,
+        image: formData.image,
+      }
+      console.log('params is',params)
       onCloseRec();
     } catch (error) {
       console.error('Error saving recommendation:', error);
@@ -214,28 +265,28 @@ useEffect(() => {
                 <View style={styles.formContainer}>
                   {/* 名称输入 */}
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>Name *</Text>
+                    <Text style={styles.label}>Merchant Name *</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="Enter place name"
+                      placeholder="Enter Merchant Name"
                       value={formData.name}
                       onChangeText={(text) => handleInputChange('name', text)}
-                      
+                      onBlur={() => getMechantsList()}
                       placeholderTextColor="#6B7280"
                     />
                   </View>
-                  
-                  {/* 类型和分类 */}
-                  <View style={styles.gridTwoColumns}>
-                    {/* 类型选择 */}
-                    <View style={[styles.formGroup, styles.halfWidth]}>
-                      <Text style={styles.label}>Type *</Text>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Choose Merchant*</Text>
                       <Picker
-                        selectedValue={formData.type || 'food'}
+                        selectedValue={merchantId}
                         style={styles.picker}
-                        onValueChange={(itemValue) => handleTypeSelect(itemValue)}
-                      >
-                        {recommendationTypes.map(type => (
+                        onValueChange={(itemValue) => handleSelectMechant(itemValue)}
+                    >
+                      <Picker.Item 
+                            label='Enter the merchant name to select the merchant'
+                          />
+                        {merchantList.map(type => (
                           <Picker.Item 
                             label={type.label} 
                             value={type.value} 
@@ -243,19 +294,44 @@ useEffect(() => {
                           />
                         ))}
                       </Picker>
-                    </View>
-                    
-                    {/* 分类输入 */}
-                    <View style={[styles.formGroup, styles.halfWidth]}>
-                      <Text style={styles.label}>Category *</Text>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="e.g., Italian, Museum"
-                        value={formData.category}
-                        onChangeText={(text) => handleInputChange('category', text)}
-                        placeholderTextColor="#6B7280"
-                      />
-                    </View>
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Circle*</Text>
+                      <Picker
+                        selectedValue={circleId}
+                        style={styles.picker}
+                        onValueChange={(itemValue) => handleSelectCircle(itemValue)}
+                    >
+                       <Picker.Item 
+                            label='Select Circle'
+                          />
+                        {circleList.map(type => (
+                          <Picker.Item 
+                            label={type.label} 
+                            value={type.value} 
+                            key={type.value} 
+                          />
+                        ))}
+                      </Picker>
+                  </View>
+                  
+                  {/* 类型选择 */}
+                  <View style={[styles.formGroup,{width: '100%'}]}>
+                    <Text style={styles.label}>Type *</Text>
+                    <Picker
+                      selectedValue={formData.type || 'food'}
+                      style={styles.picker}
+                      onValueChange={(itemValue) => handleTypeSelect(itemValue)}
+                    >
+                      {recommendationTypes.map(type => (
+                        <Picker.Item 
+                          label={type.label} 
+                          value={type.value} 
+                          key={type.value} 
+                        />
+                      ))}
+                    </Picker>
                   </View>
                   
                   {/* 位置输入 */}
@@ -263,10 +339,11 @@ useEffect(() => {
                     <Text style={styles.label}>Location *</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="City, Country"
+                      placeholder="Auto fill,do not edit"
                       value={formData.location}
                       onChangeText={(text) => handleInputChange('location', text)}
                       multiline={true} // 启用多行输入
+                      disabled={true}
                       numberOfLines={4} // 默认显示的行数
                       placeholderTextColor="#6B7280"
                     />
@@ -278,7 +355,7 @@ useEffect(() => {
                     <View style={[styles.formGroup, styles.halfWidth]}>
                       <Text style={styles.label}>Rating</Text>
                       <Picker
-                        selectedValue={formData.rating}
+                        selectedValue={formData.score}
                         onValueChange={handleRatingChange}
                         style={styles.picker}
                       >
@@ -315,10 +392,10 @@ useEffect(() => {
                   <View style={styles.formGroup}>
                     <Text style={styles.label}>Description *</Text>
                     <TextInput
-                      style={[styles.textArea, styles.input]}
+                      style={[styles.textArea, styles.input,{height:60}]}
                       placeholder="Share your thoughts..."
-                      value={formData.description}
-                      onChangeText={(text) => handleInputChange('description', text)}
+                      value={formData.content}
+                      onChangeText={(text) => handleInputChange('content', text)}
                       multiline
                       numberOfLines={4}
                       
@@ -488,7 +565,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   input: {
-    height: 50,
+    height: 40,
     marginTop:10,
     borderWidth: 1,
     borderColor: '#D1D5DB',
@@ -511,7 +588,7 @@ const styles = StyleSheet.create({
     width:'49%'
   },
   picker: {
-    height: 50,
+    height: 40,
     width: '100%',
     color: '#333',
     marginVertical: 10,
@@ -519,7 +596,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    paddingHorizontal: 15,
+    paddingHorizontal: 8,
   },
   imageUploadContainer: {
     flexDirection: 'row',
