@@ -68,6 +68,15 @@ const TabLayout = () => {
           }}
         />
         <Tabs.Screen
+          name="merchantDetail"
+          options={{
+            title: 'MerchantDetail',
+            tabBarItemStyle: {
+              display: 'none'
+            }
+          }}
+        />
+        <Tabs.Screen
           name="circles"
           options={{
             title: 'Circles',

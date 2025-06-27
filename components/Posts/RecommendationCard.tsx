@@ -1,4 +1,5 @@
 import { Picker } from '@react-native-picker/picker';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   Image,
@@ -8,6 +9,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import RatingStars from './components/RatingStars';
 
 // 定义推荐卡片的props类型
 type RecommendationProps = {
@@ -46,8 +48,11 @@ const RecommendationCard = ({
   const [commentText, setCommentText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState(recommendation.userRating || 0);
-  const [isEdit,setIsEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const navigation = useNavigation();
 
+  const route = useRoute();
+  console.log(route)
   const ratingOptions = [
   { label: 'None', value: '0' },
   { label: '1 Star', value: '1' },
@@ -56,37 +61,6 @@ const RecommendationCard = ({
   { label: '4 Stars', value: '4' },
   { label: '5 Stars', value: '5' },
   ];
-
-  // 渲染星级评分
-  const renderRatingStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
-    // 添加满星
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Text key={`full-star-${i}`} style={styles.ratingStar}>★</Text>
-      );
-    }
-
-    // 添加半星
-    if (hasHalfStar) {
-      stars.push(
-        <Text key="half-star" style={styles.ratingStarHalf}>★</Text>
-      );
-    }
-
-    // 添加空星
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <Text key={`empty-star-${i}`} style={styles.ratingStarEmpty}>★</Text>
-      );
-    }
-
-    return stars;
-  };
 
    const handleRatingChange = (value:any) => {
     setUserRating(value);
@@ -129,6 +103,14 @@ const RecommendationCard = ({
   const handleCommentChange = (text: string) => {
     setCommentText(text);
   };
+
+ const goMechantDetail = (item: any) => {
+  console.log('goMechantDetail exe', item);
+  // 移除 as never 类型断言，正确传递路由名称和参数
+  navigation.navigate('merchantDetail', {
+    item
+  });
+};
 
   return (
     <View style={styles.card}>
@@ -181,7 +163,7 @@ const RecommendationCard = ({
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>{recommendation.title}</Text>
           <View style={styles.rating}>
-            {renderRatingStars(recommendation.rating)}
+            <RatingStars rating={recommendation.rating} />
             <Text style={styles.ratingNumber}>{recommendation.rating}</Text>
           </View>
         </View>
@@ -214,7 +196,7 @@ const RecommendationCard = ({
           <View style={styles.recommendersContainer}>
             <Text style={styles.recommendersLabel}>Recommended by:</Text>
             <View style={styles.recommendersList}>
-              { recommendation.recommenders.map((recommender, index) => (
+              { recommendation.recommenders.map((recommender:any, index : any) => (
                 <View key={index} style={styles.recommenderItem}>
                   {recommender.avatarUrl ? (
                     <Image 
@@ -238,20 +220,18 @@ const RecommendationCard = ({
         
         {/* 操作按钮 */}
         <View style={styles.actionButtons}>
-          {/* <TouchableOpacity 
+          {route.path === '/' && <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => {
-              if (onAddToTry) onAddToTry(recommendation.id);
-            }}
+            onPress={() => goMechantDetail(recommendation)}
           >
             <Text style={styles.actionButtonText}>
-              <Text style={styles.actionButtonIcon}>📖</Text> Want to Try
+              <Text style={styles.actionButtonIcon}>📖</Text> View Merchant Detail
             </Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>}
           <TouchableOpacity 
             style={styles.actionButton}
             onPress={() => {
-              if (onViewWebsite) onViewWebsite(recommendation.websiteUrl || '');
+              goMechantDetail(recommendation)
             }}
           >
             <Text style={styles.actionButtonText}>
@@ -268,7 +248,7 @@ const RecommendationCard = ({
             
             {/* 用户评分星星 */}
             <View style={styles.userRatingStars}>
-              {recommendation.userRating ? renderRatingStars(recommendation.userRating) : 
+              {recommendation.userRating ?  <RatingStars rating={recommendation.userRating} /> : 
               <Picker
                 selectedValue={userRating}
                 onValueChange={handleRatingChange}
@@ -425,19 +405,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  ratingStar: {
-    color: '#ffd700',
-    fontSize: 16,
-  },
-  ratingStarHalf: {
-    color: '#ffd700',
-    fontSize: 16,
-    transform: [{ scaleX: 0.5 }],
-  },
-  ratingStarEmpty: {
-    color: '#666666',
-    fontSize: 16,
-  },
+
   ratingNumber: {
     color: '#ffffff',
     fontSize: 14,
