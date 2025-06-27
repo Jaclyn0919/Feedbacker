@@ -1,7 +1,7 @@
 import { get } from '@/utils/http';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import TagList from './components/TagComponent';
 
+// 明确表单数据类型定义
 type formDataType = {
   name: string;
   type: string;
@@ -29,6 +30,14 @@ type formDataType = {
   content: string;
   tags: string;
   url: string;
+};
+
+// 明确组件 props 类型
+type Props = {
+  isOpenRec: boolean;
+  onCloseRec: () => void;
+  type: 'add' | 'edit';
+  item?: any; // 编辑时传入的项目数据
 };
 
 const { width, height } = Dimensions.get('window');
@@ -57,7 +66,7 @@ const priceLevels = [
   { label: '$$$$Very Expensive', value: '4' },
 ];
 
-const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
+const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item }: Props) => {
   const [formData, setFormData] = useState<formDataType>({
     name: '',
     type: 'food',
@@ -68,85 +77,133 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
     tags: '',
     url: '',
   });
-  const [selectedTags, setSelectedTags] =  useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pickedImage, setPickedImage] = useState<any>(null);
-  const [merchantId, setMerchantId] = useState<any>({});
-  const [merchantList,setMerchantList] = useState<any>([]);
-  const [circleId, setCircleId] = useState<any>([]);
+  const [merchantId, setMerchantId] = useState<any>(null);
+  const [merchantList, setMerchantList] = useState<any>([]);
+  const [circleId, setCircleId] = useState<any>(null);
   const [circleList, setCircleList] = useState<any>([]);
   const [pickedImages, setPickedImages] = useState<any>([]);
 
+  // 处理表单初始化 - 根据type和item填充数据
+  useEffect(() => {
+    if (type === 'edit' && item) {
+      console.log('item is',item,'is edit ')
+      // 编辑模式下填充表单数据
+      setFormData({
+        name: item.name || '',
+        type: item.type || 'food',
+        location: item.address || '',
+        score: item.score?.toString() || '4',
+        priceLevel: item.priceLevel?.toString() || '2',
+        content: item.content || '',
+        tags: item.tags?.join(',') || '',
+        url: item.url || '',
+      });
+      
+      // 设置商家ID和圈子ID
+      setMerchantId(item.merchantId);
+      setCircleId(item.circleId);
+      
+      // 设置标签
+      if (item.tags && Array.isArray(item.tags)) {
+        setSelectedTags(item.tags);
+      }
+      
+      // 设置图片（如果有）
+      if (item.images && Array.isArray(item.images)) {
+        setPickedImages(item.images.map(img => ({ uri: img })));
+      }
+    } else if (type === 'add') {
+      // 新增模式下重置表单
+      setFormData({
+        name: '',
+        type: 'food',
+        location: '',
+        score: '4',
+        priceLevel: '2',
+        content: '',
+        tags: '',
+        url: '',
+      });
+      setSelectedTags([]);
+      setPickedImages([]);
+      setMerchantId(null);
+      setCircleId(null);
+    }
+  }, [type, item]);
 
-  let merchantItem:any = null
+  let merchantItem: any = null;
   const getMechantsList = () => {
-    console.log('getMechantsList exe',formData.name)
+    console.log('getMechantsList exe', formData.name);
     // get('/api/merchants').then(res => {
     //   setMerchantList(res.data)
     // })
-  }
+  };
 
   const getCircleList = () => {
     get('/api/circles').then(res => {
-      setCircleList(res.data)
-    })
-  }
+      setCircleList(res.data);
+    });
+  };
+
   // 处理表单输入变化
-  const handleInputChange = (field :any, value :any) => {
+  const handleInputChange = (field: keyof formDataType, value: string) => {
     setFormData({ ...formData, [field]: value });
   };
 
   // 处理类型选择
   const handleSelectMechant = (value: any) => {
-    merchantItem = getMechantById(value)
-    setFormData({ ...formData, location: merchantItem?.address })
-    setMerchantId(value)
+    merchantItem = getMechantById(value);
+    setFormData({ ...formData, location: merchantItem?.address });
+    setMerchantId(value);
   };
 
-  const getMechantById = (id = null) => {
-    if (id) {
-      return merchantList.find(v => v.id === id)
+  const getMechantById = (id: any = null) => {
+    if (id !== null) {
+      return merchantList.find(v => v.id === id);
     } else {
-      return merchantList.find(v => v.id === merchantId)
-     }
-  }
+      return merchantList.find(v => v.id === merchantId);
+    }
+  };
 
-  const handleSelectCircle = (value :any) => {
-    setCircleId(value)
+  const handleSelectCircle = (value: any) => {
+    setCircleId(value);
   };
 
   const getCircleById = () => {
-    return circleList.find(v => v.id === circleId)
-  }
- 
-  const handleTypeSelect = (value :any) => {
+    return circleList.find(v => v.id === circleId);
+  };
+
+  const handleTypeSelect = (value: any) => {
     setFormData({ ...formData, type: value });
   };
 
   // 处理评分选择
-  const handleRatingChange = (value:any) => {
+  const handleRatingChange = (value: any) => {
     setFormData({ ...formData, score: value });
-  }
+  };
 
   // 处理价格水平选择
-  const handlePriceChange =  (value : any) => {
+  const handlePriceChange = (value: any) => {
     setFormData({ ...formData, priceLevel: value });
-  }
+  };
 
   // 处理图片上传
   const handleImageUpload = async () => {
-      let result = await ImagePicker.launchImageLibraryAsync({
+    let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true, // 启用多选
       quality: 0.8,
     });
-    console.log('result is',result)
+    console.log('result is', result);
     if (!result.canceled) {
       // 将新选择的图片添加到现有图片数组中
       setPickedImages(prev => [...prev, ...result.assets.map(asset => ({ uri: asset.uri }))]);
     }
   };
-  const handleRemoveImage = (index) => {
+
+  const handleRemoveImage = (index: number) => {
     setPickedImages(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -154,28 +211,29 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
   const handleAddTag = () => {
     if (selectedTags.includes(formData.tags)) {
       Alert.alert('Error', 'Tag already exists');
-      return
+      return;
     }
     if (formData.tags.trim() !== '') {
       // 在实际应用中，这里会将标签添加到数组中
       setFormData({ ...formData, tags: '' });
-      setSelectedTags([...selectedTags, formData.tags])
+      setSelectedTags([...selectedTags, formData.tags]);
     }
   };
+
   // 处理标签删除
-  const handleRemoveTag = (tagToRemove :any) => {
+  const handleRemoveTag = (tagToRemove: string) => {
     setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
   };
 
   // 验证表单
   const validateForm = () => {
-     merchantItem = getMechantById()
+    merchantItem = getMechantById();
     if (!Object.values(merchantItem).length) {
       Alert.alert('Form Error', 'Please choose a merchant');
-      return false
+      return false;
     }
     if (!formData.name || !formData.location || !formData.content) {
-      Alert.alert('Form Error', 'Please fill in all  fields');
+      Alert.alert('Form Error', 'Please fill in all required fields');
       return false;
     }
     return true;
@@ -183,11 +241,11 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
 
   // 处理表单提交
   const handleSubmit = async () => {
-    // if (!validateForm()) return;
+    if (!validateForm()) return;
     
     setIsSubmitting(true);
     try {
-      // 在实际应用中，这里会将数据发送到服务器
+      // 构建提交参数
       const params = {
         name: merchantItem?.name,
         address: merchantItem?.address,
@@ -195,14 +253,28 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
         longitude: merchantItem?.longitude,
         externalId: merchantItem?.externalId,
         circleId: getCircleById()?.id,
-        content:formData.content,
+        content: formData.content,
         score: formData.score,
         tags: selectedTags,
         type: formData.type,
         priceLevel: formData.priceLevel,
         url: formData.url,
+        // 编辑模式下需要ID
+        id: type === 'edit' ? item?.id : undefined,
+      };
+      
+      console.log('params is', params);
+      
+      // 这里应该调用API进行保存
+      // 新增或编辑的API调用可能不同，需要根据type处理
+      if (type === 'add') {
+        // 调用新增API
+        // await addRecommendation(params);
+      } else if (type === 'edit') {
+        // 调用编辑API
+        // await updateRecommendation(params);
       }
-      console.log('params is',params)
+      
       onCloseRec();
     } catch (error) {
       console.error('Error saving recommendation:', error);
@@ -213,16 +285,23 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
   };
 
   // 请求媒体库权限
-useEffect(() => {
-  (async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      // Alert.alert('需要媒体库权限才能选择图片');
-      Alert.alert('Media library permission is required to select images');
-    }
-  })();
-}, []);
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Media library permission is required to select images');
+      }
+    })();
+  }, []);
 
+  // 优化：使用useCallback缓存函数，避免重复创建
+  const memoizedGetMechantById = useCallback((id: any = null) => {
+    if (id !== null) {
+      return merchantList.find(v => v.id === id);
+    } else {
+      return merchantList.find(v => v.id === merchantId);
+    }
+  }, [merchantList, merchantId]);
 
   return (
     <Modal
@@ -239,9 +318,9 @@ useEffect(() => {
       <View style={styles.modalContainer}>
         <Pressable onPress={(e) => e.stopPropagation()}>
           <View style={styles.modalContent}>
-            {/* 头部区域 */}
+            {/* 头部区域 - 显示新增或编辑标题 */}
             <View style={styles.header}>
-              <Text style={styles.title}>Add New Recommendation</Text>
+              <Text style={styles.title}>{type === 'add' ? 'Add New Recommendation' : 'Edit Recommendation'}</Text>
               <Text style={styles.subtitle}>Share places, experiences, and business services you recommend.</Text>
             </View>
             
@@ -400,7 +479,6 @@ useEffect(() => {
                       onChangeText={(text) => handleInputChange('content', text)}
                       multiline
                       numberOfLines={4}
-                      
                       placeholderTextColor="#6B7280"
                     />
                   </View>
@@ -492,7 +570,7 @@ useEffect(() => {
                       {isSubmitting ? (
                         <ActivityIndicator size="small" color="white" />
                       ) : (
-                        <Text style={styles.saveButtonText}>Save Recommendation</Text>
+                        <Text style={styles.saveButtonText}>{type === 'add' ? 'Save Recommendation' : 'Update Recommendation'}</Text>
                       )}
                     </TouchableOpacity>
                   </View>

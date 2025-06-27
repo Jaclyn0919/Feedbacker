@@ -1,20 +1,19 @@
 // MerchantDetailScreen.js
-import RecommendationCard from '@/components/Posts/RecommendationCard';
 import RatingStars from '@/components/Posts/components/RatingStars';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Button,
-    FlatList,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Button,
+  FlatList,
+  Image,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // 模拟API调用的函数
@@ -35,20 +34,6 @@ const fetchMerchantPosts = async (merchantId) => {
         type: 'food',
         priceLevel: '2',
         images: ['https://picsum.photos/400/300?random=1', 'https://picsum.photos/400/300?random=2']
-      },
-      {
-        id: 2,
-        authorId: 2,
-        circleId: 4,
-        merchantId: merchantId,
-        name: '环境优雅的下午茶',
-        content: '周末和朋友一起来这里喝下午茶，环境非常优雅，甜点也很精致。价格适中，值得再来！',
-        score: 4.0,
-        createdAt: '2025-06-10',
-        updatedAt: '2025-06-10',
-        type: 'food',
-        priceLevel: '2',
-        images: ['https://picsum.photos/400/300?random=3']
       },
       {
         id: 3,
@@ -85,10 +70,9 @@ const fetchMerchantPosts = async (merchantId) => {
   }
 };
 
-// 帖子项组件
+// 帖子项组件 - 添加事件拦截优化滚动
 const PostItem = ({ post }) => {
   const [comments, setComments] = useState([
-    // 为每个帖子添加初始评论数据
     {
       id: post.id + '_comment1',
       author: '用户1',
@@ -114,7 +98,7 @@ const PostItem = ({ post }) => {
     
     const newComment = {
       id: Date.now().toString(),
-      author: '你', // 实际应用中应该使用当前用户信息
+      author: '你', 
       text: newCommentText,
       date: formatDate(new Date()),
       isEditing: false,
@@ -187,146 +171,109 @@ const PostItem = ({ post }) => {
   };
   
   return (
-<View style={styles.postContainer}>
-  <View style={styles.postHeader}>
-    <Text style={styles.postTitle}>{post.name}</Text>
-    <View style={styles.rating}>
-      <RatingStars rating={post.score} />
-      <Text style={styles.ratingNumber}>{post.score}</Text>
-    </View>
-  </View>
-  
-  <View style={styles.postImagesContainer}>
-    {post.images.map((image, index) => (
-      <Image 
-        key={index} 
-        source={{ uri: image }} 
-        style={[
-          styles.postImage,
-          {
-            marginLeft: 0,
-            marginRight: 0,
-            marginBottom: index === post.images.length - 1 ? 0 : 8,
-          }
-        ]} 
-        resizeMode="cover"
-      />
-    ))}
-  </View>
-  
-  <Text style={styles.postContent}>{post.content}</Text>
-  
-  <View style={styles.postMeta}>
-    <Text style={styles.postDate}>{post.createdAt}</Text>
-    <View style={styles.postTags}>
-      <Text style={styles.postTag}>{post.type}</Text>
-      <Text style={styles.postTag}>Prices: {post.priceLevel === '1' ? '¥' : post.priceLevel === '2' ? '¥¥' : '¥¥¥'}</Text>
-    </View>
-  </View>
-  
-  {/* 评论输入区域 */}
-  <View style={styles.commentInputContainer}>
-    <TextInput
-      style={styles.commentInput}
-      placeholder="添加评论..."
-      value={newCommentText}
-      onChangeText={(text) => setNewCommentText(text)}
-    />
-    <Button
-      title="发布"
-      onPress={handleAddComment}
-      disabled={!newCommentText.trim()}
-    />
-  </View>
-  
-  {/* 评论列表 */}
-  <View style={styles.commentsContainer}>
-    {comments.length === 0 ? (
-      <Text style={styles.noCommentsText}>暂无评论</Text>
-    ) : (
-      comments.map((comment) => (
-        <View key={comment.id} style={styles.commentItem}>
-          <View style={styles.commentHeader}>
-            <Text style={styles.commentAuthor}>{comment.author}</Text>
-            <Text style={styles.commentDate}>{comment.date}</Text>
-          </View>
-          {comment.isEditing ? (
-            <View>
-              <TextInput
-                style={styles.commentEditInput}
-                value={comment.editedText || comment.text}
-                onChangeText={(text) => handleEditCommentText(comment.id, text)}
-              />
-              <View style={styles.commentActions}>
-                <Button title="取消" onPress={() => handleCancelEdit(comment.id)} />
-                <Button title="保存" onPress={() => handleSaveEdit(comment.id)} />
-              </View>
-            </View>
-          ) : (
-            <View>
-              <Text style={styles.commentText}>{comment.text}</Text>
-              <View style={styles.commentActions}>
-                <Button title="编辑" onPress={() => handleStartEdit(comment.id)} />
-                <Button title="删除" onPress={() => handleDeleteComment(comment.id)} />
-              </View>
-            </View>
-          )}
+    <View 
+      style={styles.postContainer}
+      // 阻止事件向上传递，避免ScrollView拦截
+      onTouchStart={(e) => e.stopPropagation()}
+    >
+      <View style={styles.postHeader}>
+        <Text style={styles.postTitle}>{post.name}</Text>
+        <View style={styles.rating}>
+          <RatingStars rating={post.score} />
+          <Text style={styles.ratingNumber}>{post.score}</Text>
         </View>
-      ))
-    )}
-  </View>
-</View>
-
+      </View>
+      
+      <View style={styles.postImagesContainer}>
+        {post.images.map((image, index) => (
+          <Image 
+            key={index} 
+            source={{ uri: image }} 
+            style={[
+              styles.postImage,
+              {
+                marginLeft: 0,
+                marginRight: 0,
+                marginBottom: index === post.images.length - 1 ? 0 : 8,
+              }
+            ]} 
+            resizeMode="cover"
+          />
+        ))}
+      </View>
+      
+      <Text style={styles.postContent}>{post.content}</Text>
+      
+      <View style={styles.postMeta}>
+        <Text style={styles.postDate}>{post.createdAt}</Text>
+        <View style={styles.postTags}>
+          <Text style={styles.postTag}>{post.type}</Text>
+          <Text style={styles.postTag}>Prices: {post.priceLevel === '1' ? '¥' : post.priceLevel === '2' ? '¥¥' : '¥¥¥'}</Text>
+        </View>
+      </View>
+      
+      {/* 评论输入区域 */}
+      <View style={styles.commentInputContainer}>
+        <TextInput
+          style={styles.commentInput}
+          placeholder="添加评论..."
+          value={newCommentText}
+          onChangeText={(text) => setNewCommentText(text)}
+        />
+        <Button
+          title="发布"
+          onPress={handleAddComment}
+          disabled={!newCommentText.trim()}
+        />
+      </View>
+      
+      {/* 评论列表 */}
+      <View style={styles.commentsContainer}>
+        {comments.length === 0 ? (
+          <Text style={styles.noCommentsText}>暂无评论</Text>
+        ) : (
+          comments.map((comment) => (
+            <View key={comment.id} style={styles.commentItem}>
+              <View style={styles.commentHeader}>
+                <Text style={styles.commentAuthor}>{comment.author}</Text>
+                <Text style={styles.commentDate}>{comment.date}</Text>
+              </View>
+              {comment.isEditing ? (
+                <View>
+                  <TextInput
+                    style={styles.commentEditInput}
+                    value={comment.editedText || comment.text}
+                    onChangeText={(text) => handleEditCommentText(comment.id, text)}
+                  />
+                  <View style={styles.commentActions}>
+                    <Button title="取消" onPress={() => handleCancelEdit(comment.id)} />
+                    <Button title="保存" onPress={() => handleSaveEdit(comment.id)} />
+                  </View>
+                </View>
+              ) : (
+                <View>
+                  <Text style={styles.commentText}>{comment.text}</Text>
+                  <View style={styles.commentActions}>
+                    <Button title="编辑" onPress={() => handleStartEdit(comment.id)} />
+                    <Button title="删除" onPress={() => handleDeleteComment(comment.id)} />
+                  </View>
+                </View>
+              )}
+            </View>
+          ))
+        )}
+      </View>
+    </View>
   );
 };
 
 const MerchantDetailScreen = () => {
-  const navigation = useNavigation();
   const route = useRoute();
-  console.log(route)
-  const merchantId = route.params?.merchantId || 1;
-  const [merchant, setMerchant] = useState(null);
+  const merchantId = route.params?.item?.merchantId || 1;
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  
-  // 模拟获取商家信息，实际项目中应从API获取
-  const getMerchantInfo = (merchantId) => {
-    // 补充更完整的商家模拟数据
-    return {
-      id: merchantId,
-      imageUrl: 'https://picsum.photos/600/400?random=' + merchantId,
-      title: '美食天地餐厅 ' + merchantId,
-      rating: 4.2,
-      location: merchantId === 1 ? '北京市朝阳区' : merchantId === 2 ? '上海市黄浦区' : '广州市天河区',
-      type: '餐厅',
-      priceRange: merchantId % 3 + 1,
-      description: '这是一家很棒的商家，提供优质的产品和服务，深受顾客喜爱。我们专注于为顾客提供美味、健康的餐食，环境舒适，服务周到。',
-      tags: ['美食', '休闲', '聚会', merchantId === 1 ? '牛排' : merchantId === 2 ? '甜点' : '快餐'],
-      timeAgo: '1周前更新',
-      recommenders: [
-        {
-          id: 1,
-          name: '张三',
-          avatarUrl: 'https://picsum.photos/100/100?random=101'
-        },
-        {
-          id: 2,
-          name: '李四',
-          avatarUrl: 'https://picsum.photos/100/100?random=102'
-        },
-        {
-          id: 3,
-          name: '王五',
-          avatarUrl: 'https://picsum.photos/100/100?random=103'
-        }
-      ],
-      websiteUrl: 'https://www.example.com/merchant/' + merchantId,
-      openingHours: '周一至周五: 10:00-22:00, 周六至周日: 09:00-23:00',
-      contact: '电话: 123-4567-8910',
-      address: merchantId === 1 ? '北京市朝阳区建国路88号' : merchantId === 2 ? '上海市黄浦区南京东路100号' : '广州市天河区天河路208号'
-    };
-  };
+  console.log(route)
   
   useEffect(() => {
     if (!merchantId) {
@@ -338,10 +285,6 @@ const MerchantDetailScreen = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
-        // 获取商家信息
-        const merchantInfo = getMerchantInfo(merchantId);
-        setMerchant(merchantInfo);
         
         // 获取商家帖子
         const postsData = await fetchMerchantPosts(merchantId);
@@ -358,19 +301,8 @@ const MerchantDetailScreen = () => {
     fetchData();
   }, [merchantId]);
   
-  const renderHeader = () => {
-    if (!merchant || isLoading) return null;
-    
-    return (
-      <View style={styles.headerContainer}>
-        <RecommendationCard 
-          recommendation={merchant}
-        />
-      </View>
-    );
-  };
-  
-  const renderPosts = () => {
+  // 渲染列表内容（根据不同状态）
+  const RenderListContent = ({post}) => {
     if (isLoading) {
       return (
         <View style={styles.loadingContainer}>
@@ -406,28 +338,36 @@ const MerchantDetailScreen = () => {
       );
     }
     
-    return (
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <PostItem post={item} />}
-        contentContainerStyle={styles.postsContainer}
-        showsVerticalScrollIndicator={false}
-      />
-    );
+    // 正常渲染帖子列表
+    return    <PostItem key={post.id} post={post} />
   };
   
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {renderHeader()}
-        <View style={styles.postsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>User posts</Text>
-          </View>
-          {renderPosts()}
-        </View>
-      </ScrollView>
+      {/* 直接使用FlatList作为主滚动容器 */}
+      <FlatList
+        // 关键属性：开启嵌套滚动支持（iOS必加）
+        nestedScrollEnabled={true}
+        // Android平台优化：控制滚动边界效果
+        overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
+        // iOS平台优化：加快滚动减速
+        decelerationRate={Platform.OS === 'ios' ? 'fast' : 'normal'}
+        // 性能优化：减少不必要的渲染
+        removeClippedSubviews={true}
+        initialNumToRender={5}
+        maxToRenderPerBatch={10}
+        windowSize={15}
+        // 列表配置
+        data={posts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({item}) => <RenderListContent post={item} />}
+        contentContainerStyle={[
+          styles.postsContainer,
+          { paddingHorizontal: 16, paddingBottom: 32 } // 合并原postsSection的样式
+        ]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      />
     </SafeAreaView>
   );
 };
@@ -437,20 +377,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212',
   },
-  headerContainer: {
-    marginBottom: 16,
-  },
-  postsSection: {
-    paddingHorizontal: 16,
-    marginBottom: 32,
-  },
-  sectionHeader: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
+  postsContainer: {
+    // 移除了paddingHorizontal，改为在FlatList的contentContainerStyle中设置
+    paddingBottom: 20,
   },
   postContainer: {
     backgroundColor: '#1a1a1a',
@@ -519,9 +448,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     color: '#ffffff',
     fontSize: 12,
-  },
-  postsContainer: {
-    paddingBottom: 20,
   },
   // 评论相关样式
   commentInputContainer: {
@@ -624,4 +550,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MerchantDetailScreen;
+export default MerchantDetailScreen;  

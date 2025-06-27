@@ -10,45 +10,22 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import AddRecommendationModal from './AddRecommendationModal';
 import RatingStars from './components/RatingStars';
 
 // 推荐卡片组件
 const RecommendationCard = ({ 
   recommendation,
   onLike,
-  onAddComment 
 }: any) => {
-  const [isLiked, setIsLiked] = useState(recommendation.isLiked || false);
-  const [commentText, setCommentText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [userRating, setUserRating] = useState(recommendation.userRating || 0);
-  const [isEdit, setIsEdit] = useState(false);
+  const [isLiked, setIsLiked] = useState(recommendation?.isLiked || false);
   const navigation = useNavigation();
+  const [isOpenRec, setIsOpenRec] = useState(false);
 
   const route = useRoute();
   console.log(route)
-  const ratingOptions = [
-  { label: 'None', value: '0' },
-  { label: '1 Star', value: '1' },
-  { label: '2 Stars', value: '2' },
-  { label: '3 Stars', value: '3' },
-  { label: '4 Stars', value: '4' },
-  { label: '5 Stars', value: '5' },
-  ];
+  console.log('recommendation is',recommendation)
 
-   const handleRatingChange = (value:any) => {
-    setUserRating(value);
-  }
-   const handleEditComent = () => {
-   
-  }
-
-   const handleCancelComent = () => {
-   
-  }
-  const handleSaveComent = () => {
-   console.log('recommendation is',recommendation)
-  }
 
   // 渲染价格范围
   const renderPriceRange = (priceRange: number) => {
@@ -61,22 +38,9 @@ const RecommendationCard = ({
     return dollarSigns;
   };
 
-  // 处理添加评论
-  const handleAddComment = () => {
-    if (commentText.trim() === '') return;
-    
-    setIsLoading(true);
-    if (onAddComment) {
-      onAddComment(recommendation.id, commentText);
-    }
-    setCommentText('');
-    setIsLoading(false);
-  };
-
-  // 处理评论输入
-  const handleCommentChange = (text: string) => {
-    setCommentText(text);
-  };
+  const onCloseRec = () => {
+    setIsOpenRec(false)
+  }
 
  const goMechantDetail = (item: any) => {
   console.log('goMechantDetail exe', item);
@@ -90,15 +54,15 @@ const RecommendationCard = ({
     <View style={styles.card}>
       {/* 卡片图片区域 */}
       <View style={styles.cardImageContainer}>
-        {recommendation.imageUrl ? (
+        {recommendation?.images?.length ? (
           <Image 
-            source={{ uri: recommendation.imageUrl }} 
+            source={{ uri: recommendation.images[0] }} 
             style={styles.cardImage} 
             resizeMode="cover"
           />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Text style={styles.imagePlaceholderText}>📷 {recommendation.title}</Text>
+            <Text style={styles.imagePlaceholderText}>📷 {recommendation.name}</Text>
           </View>
         )}
         
@@ -123,19 +87,19 @@ const RecommendationCard = ({
           >
             <AntDesign name="delete" size={24} color="white" />
           </TouchableOpacity>
-          {/* <TouchableOpacity 
+          <TouchableOpacity 
             style={styles.actionBtn}
             onPress={() => {
-              if (onShare) onShare(recommendation.id);
+              setIsOpenRec(true)
             }}
           >
-            <Text style={styles.actionBtnText}>📤</Text>
-          </TouchableOpacity> */}
+            <AntDesign name="edit" size={24} color="white" />
+          </TouchableOpacity>
         </View>
         
         {/* 分类标签 */}
         <View style={styles.categoryBadge}>
-          <Text style={styles.categoryBadgeText}>{recommendation.category}</Text>
+          <Text style={styles.categoryBadgeText}>{recommendation.type}</Text>
         </View>
       </View>
       
@@ -143,15 +107,15 @@ const RecommendationCard = ({
       <View style={styles.cardContent}>
         {/* 卡片头部（标题和评分） */}
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>{recommendation.title}</Text>
+          <Text style={styles.cardTitle}>{recommendation.name}</Text>
           <View style={styles.rating}>
-            <RatingStars rating={recommendation.rating} />
-            <Text style={styles.ratingNumber}>{recommendation.rating}</Text>
+            <RatingStars rating={recommendation.score} />
+            <Text style={styles.ratingNumber}>{recommendation.score}</Text>
           </View>
         </View>
         
         {/* 位置和类型 */}
-        <Text style={styles.location}>{recommendation.location} • {recommendation.type}</Text>
+        <Text style={styles.location}>{recommendation.address} • {recommendation.type}</Text>
         
         {/* 价格范围 */}
         <View style={styles.priceContainer}>
@@ -159,7 +123,7 @@ const RecommendationCard = ({
         </View>
         
         {/* 描述 */}
-        <Text style={styles.description}>{recommendation.description}</Text>
+        <Text style={styles.description}>{recommendation.content}</Text>
         
         {/* 标签 */}
         <View style={styles.tags}>
@@ -171,7 +135,7 @@ const RecommendationCard = ({
         </View>
         
         {/* 时间信息 */}
-        <Text style={styles.timeInfo}>🕒 {recommendation.timeAgo}</Text>
+        <Text style={styles.timeInfo}>🕒 {recommendation.createdAt}</Text>
         
         {/* 推荐人 */}
         {recommendation.recommenders && recommendation.recommenders.length > 0 && (
@@ -207,7 +171,7 @@ const RecommendationCard = ({
             onPress={() => goMechantDetail(recommendation)}
           >
             <Text style={styles.actionButtonText}>
-              <Text style={styles.actionButtonIcon}>📖</Text> View Merchant Detail
+              <Text style={styles.actionButtonIcon}>📖</Text> View Merchant Posts
             </Text>
           </TouchableOpacity>}
           <TouchableOpacity 
@@ -221,70 +185,8 @@ const RecommendationCard = ({
             </Text>
           </TouchableOpacity>
         </View>
-        
-        {/* 用户评分和评论 
-          <View style={styles.userRatingSection}>
-            <View style={styles.userRatingHeader}>
-              <Text style={styles.userRatingTitle}>Your Rating</Text>
-            </View>
-        */}    
-            {/* 用户评分星星
-            <View style={styles.userRatingStars}>
-              {recommendation.userRating ?  <RatingStars rating={recommendation.userRating} /> : 
-              <Picker
-                selectedValue={userRating}
-                onValueChange={handleRatingChange}
-                style={styles.picker}
-              >
-                {ratingOptions.map(option => (
-                  <Picker.Item 
-                    key={option.value} 
-                    label={option.label} 
-                    value={option.value} 
-                  />
-                ))}
-              </Picker>}
-            </View>
-             */}
-            {/* 评论输入框
-              <View style={styles.commentForm}>
-                <TextInput 
-                  style={styles.commentInput}
-                  placeholder="Write your comment..."
-                  value={commentText}
-                  onChangeText={handleCommentChange}
-                  multiline={true}
-                  numberOfLines={3}
-                />
-              <View style={styles.commentFormActions}>
-                {<TouchableOpacity 
-                  style={[styles.comentCommentButton, styles.commentFormButtonCancelEdit]}
-                    onPress={handleEditComent}
-                    disabled={isLoading}
-                >
-                  <Text style={styles.commentFormButtonText}>Edit</Text>
-                </TouchableOpacity>}
-
-                <TouchableOpacity 
-                  style={[styles.comentCommentButton, styles.commentFormButtonCancelEdit]}
-                    onPress={handleCancelComent}
-                    disabled={isLoading}
-                >
-                  <Text style={styles.commentFormButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={[styles.comentCommentButton, styles.commentFormButtonSave]}
-                    onPress={handleSaveComent}
-                    disabled={isLoading}
-                >
-                  <Text style={styles.commentFormButtonText}>Save</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-          </View>
- */}
       </View>
+      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec}  type={'edit'} item={recommendation} />}
     </View>
   );
 };
