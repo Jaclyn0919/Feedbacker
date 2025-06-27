@@ -29,7 +29,6 @@ type formDataType = {
   content: string;
   tags: string;
   url: string;
-  image?: any;
 };
 
 const { width, height } = Dimensions.get('window');
@@ -68,7 +67,6 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
     content: '',
     tags: '',
     url: '',
-    image: '',
   });
   const [selectedTags, setSelectedTags] =  useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,13 +75,15 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
   const [merchantList,setMerchantList] = useState<any>([]);
   const [circleId, setCircleId] = useState<any>([]);
   const [circleList, setCircleList] = useState<any>([]);
+  const [pickedImages, setPickedImages] = useState<any>([]);
+
 
   let merchantItem:any = null
   const getMechantsList = () => {
     console.log('getMechantsList exe',formData.name)
-    get('/api/merchants').then(res => {
-      setMerchantList(res.data)
-    })
+    // get('/api/merchants').then(res => {
+    //   setMerchantList(res.data)
+    // })
   }
 
   const getCircleList = () => {
@@ -137,14 +137,17 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
   const handleImageUpload = async () => {
       let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
-      quality: 1,
+      allowsMultipleSelection: true, // 启用多选
+      quality: 0.8,
     });
     console.log('result is',result)
     if (!result.canceled) {
-      setPickedImage(result.assets[0] || '')
-      setFormData({ ...formData, image: result.assets[0] || '' });
+      // 将新选择的图片添加到现有图片数组中
+      setPickedImages(prev => [...prev, ...result.assets.map(asset => ({ uri: asset.uri }))]);
     }
+  };
+  const handleRemoveImage = (index) => {
+    setPickedImages(prev => prev.filter((_, i) => i !== index));
   };
 
   // 处理标签添加
@@ -198,7 +201,6 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec }:any) => {
         type: formData.type,
         priceLevel: formData.priceLevel,
         url: formData.url,
-        image: formData.image,
       }
       console.log('params is',params)
       onCloseRec();
@@ -408,19 +410,32 @@ useEffect(() => {
                     <Text style={styles.label}>Image</Text>
                     <View style={styles.imageUploadContainer}>
                       <TouchableOpacity
-                        style={styles.uploadButton}
-                        onPress={handleImageUpload}
-                      >
-                        {/* <UploadOutline fontSize={20} style={styles.uploadIcon} /> */}
-                        <Text style={styles.uploadText}>Upload Image</Text>
-                      </TouchableOpacity>
-                      {pickedImage && (
-                        <Image 
-                          source={pickedImage} 
-                          style={styles.previewImage} 
-                          resizeMode="cover"
-                        />
-                      )}
+                          style={styles.uploadButton}
+                          onPress={handleImageUpload}
+                        >
+                          <Text style={styles.uploadText}>Upload Images</Text>
+                        </TouchableOpacity>
+                        
+                        {/* 多张图片预览区域 */}
+                        {pickedImages.length > 0 && (
+                          <View style={styles.imagesPreviewContainer}>
+                            {pickedImages.map((image, index) => (
+                              <View key={index} style={styles.imagePreviewWrapper}>
+                                <Image 
+                                  source={image} 
+                                  style={styles.previewImage} 
+                                  resizeMode="cover"
+                                />
+                                <TouchableOpacity
+                                  style={styles.removeImageButton}
+                                  onPress={() => handleRemoveImage(index)}
+                                >
+                                  <Text style={styles.removeImageText}>X</Text>
+                                </TouchableOpacity>
+                              </View>
+                            ))}
+                          </View>
+                        )}
                     </View>
                   </View>
                   
@@ -588,7 +603,7 @@ const styles = StyleSheet.create({
     width:'49%'
   },
   picker: {
-    height: 40,
+    height: 50,
     width: '100%',
     color: '#333',
     marginVertical: 10,
@@ -599,32 +614,51 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   imageUploadContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    width: '100%',
+    marginVertical: 10,
   },
   uploadButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 40,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    backgroundColor: '#f0f0f0',
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-  },
-  uploadIcon: {
-    marginRight: 4,
+    padding: 12,
+    alignItems: 'center',
+    marginBottom: 10,
   },
   uploadText: {
-    fontSize: 14,
-    color: '#1F2937',
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  imagesPreviewContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  imagePreviewWrapper: {
+    position: 'relative',
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   previewImage: {
-    width: 60,
-    height: 40,
-    borderRadius: 8,
+    width: '100%',
+    height: '100%',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  removeImageText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   tagsContainer: {
     flexDirection: 'row',

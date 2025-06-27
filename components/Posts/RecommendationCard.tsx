@@ -1,47 +1,21 @@
-import { Picker } from '@react-native-picker/picker';
+// import { Picker } from '@react-native-picker/picker';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   Image,
   StyleSheet,
   Text,
-  TextInput,
+  // TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
 import RatingStars from './components/RatingStars';
 
-// 定义推荐卡片的props类型
-type RecommendationProps = {
-  id: string,
-  title: string,
-  imageUrl: string,
-  category: string,
-  rating: number,
-  location: string,
-  type: string,
-  description: string,
-  tags: string[],
-  timeAgo: string,
-  priceRange?: number, // 价格范围（1-4美元符号）
-  recommenders?: { name: string, avatarUrl: string }[],
-  isLiked?: boolean,
-  onLike?: (id: string) => void,
-  onShare?: (id: string) => void,
-  onAddToTry?: (id: string) => void,
-  onViewWebsite?: (url: string) => void,
-  onAddComment?: (id: string, comment: string) => void,
-  userRating?: number,
-  userComment?: string
-};
-
 // 推荐卡片组件
 const RecommendationCard = ({ 
   recommendation,
   onLike,
-  onShare,
-  onAddToTry,
-  onViewWebsite,
   onAddComment 
 }: any) => {
   const [isLiked, setIsLiked] = useState(recommendation.isLiked || false);
@@ -144,11 +118,19 @@ const RecommendationCard = ({
           <TouchableOpacity 
             style={styles.actionBtn}
             onPress={() => {
+              console.log('123')
+            }}
+          >
+            <AntDesign name="delete" size={24} color="white" />
+          </TouchableOpacity>
+          {/* <TouchableOpacity 
+            style={styles.actionBtn}
+            onPress={() => {
               if (onShare) onShare(recommendation.id);
             }}
           >
             <Text style={styles.actionBtnText}>📤</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         
         {/* 分类标签 */}
@@ -220,7 +202,7 @@ const RecommendationCard = ({
         
         {/* 操作按钮 */}
         <View style={styles.actionButtons}>
-          {route.path === '/' && <TouchableOpacity 
+          {route.name === 'index' && <TouchableOpacity 
             style={styles.actionButton}
             onPress={() => goMechantDetail(recommendation)}
           >
@@ -240,13 +222,13 @@ const RecommendationCard = ({
           </TouchableOpacity>
         </View>
         
-        {/* 用户评分和评论 */}
+        {/* 用户评分和评论 
           <View style={styles.userRatingSection}>
             <View style={styles.userRatingHeader}>
               <Text style={styles.userRatingTitle}>Your Rating</Text>
             </View>
-            
-            {/* 用户评分星星 */}
+        */}    
+            {/* 用户评分星星
             <View style={styles.userRatingStars}>
               {recommendation.userRating ?  <RatingStars rating={recommendation.userRating} /> : 
               <Picker
@@ -263,8 +245,8 @@ const RecommendationCard = ({
                 ))}
               </Picker>}
             </View>
-            
-            {/* 评论输入框 */}
+             */}
+            {/* 评论输入框
               <View style={styles.commentForm}>
                 <TextInput 
                   style={styles.commentInput}
@@ -301,7 +283,7 @@ const RecommendationCard = ({
                 </View>
               </View>
           </View>
-
+ */}
       </View>
     </View>
   );

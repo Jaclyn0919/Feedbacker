@@ -119,17 +119,10 @@ const Index = () => {
       </View>
       
       <View style={styles.viewingInfo}>
-        <Text style={styles.viewingText}>📍 Viewing: All Recommendations</Text>
+        <Text style={styles.viewingText}>📍 Viewing: All Merchant Recommendations</Text>
       </View>
 
       <ScrollView style={styles.content}>
-        {/* <View style={styles.developerNote}>
-          <Text style={styles.noteTitle}>Developer B - Posts & Business Module</Text>
-          <Text style={styles.noteText}>
-            Features: Create post, Google Maps autocomplete, Delete post, View by circle, 
-            Post details, Edit post, Comments, Like posts, Search posts, Save businesses
-          </Text>
-        </View> */}
         {recommendations.map((rec) => (
           <RecommendationCard key={rec.id} recommendation={rec} />
         ))}

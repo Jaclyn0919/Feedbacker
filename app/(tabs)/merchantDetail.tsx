@@ -5,12 +5,14 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Button,
     FlatList,
     Image,
     SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -18,7 +20,7 @@ import {
 // 模拟API调用的函数
 const fetchMerchantPosts = async (merchantId) => {
   try {
-    // 模拟数据
+    // 补充更完整的模拟数据，修复图片URL重复问题
     return [
       {
         id: 1,
@@ -60,7 +62,21 @@ const fetchMerchantPosts = async (merchantId) => {
         updatedAt: '2025-06-05',
         type: 'food',
         priceLevel: '1',
-        images: ['https://picsum.photos/400/300?random=4', 'https://picsum.photos/400/300?random=5', 'https://picsum.photos/400/300?random=6']
+        images: ['https://picsum.photos/400/300?random=4', 'https://picsum.photos/400/300?random=5', 'https://picsum.photos/400/300?random=6', 'https://picsum.photos/400/300?random=7', 'https://picsum.photos/400/300?random=8', 'https://picsum.photos/400/300?random=9']
+      },
+      {
+        id: 4,
+        authorId: 4,
+        circleId: 4,
+        merchantId: merchantId,
+        name: '早餐新选择',
+        content: '发现了一家很棒的早餐店，他们的三明治和咖啡搭配得非常好，价格也很实惠。',
+        score: 4.2,
+        createdAt: '2025-06-01',
+        updatedAt: '2025-06-01',
+        type: 'breakfast',
+        priceLevel: '1',
+        images: ['https://picsum.photos/400/300?random=10', 'https://picsum.photos/400/300?random=11']
       }
     ];
   } catch (error) {
@@ -71,53 +87,203 @@ const fetchMerchantPosts = async (merchantId) => {
 
 // 帖子项组件
 const PostItem = ({ post }) => {
-  const ratingOptions = [
-    { value: 1, label: '1' },
-    { value: 2, label: '2' },
-    { value: 3, label: '3' },
-    { value: 4, label: '4' },
-    { value: 5, label: '5' }
-  ];
+  const [comments, setComments] = useState([
+    // 为每个帖子添加初始评论数据
+    {
+      id: post.id + '_comment1',
+      author: '用户1',
+      text: '非常同意，这家店的牛排确实很棒！',
+      date: '2025-06-16 10:30',
+      isEditing: false,
+      editedText: null,
+    },
+    {
+      id: post.id + '_comment2',
+      author: '用户2',
+      text: '我也来过，服务确实很周到，环境也不错。',
+      date: '2025-06-17 14:15',
+      isEditing: false,
+      editedText: null,
+    }
+  ]);
+  const [newCommentText, setNewCommentText] = useState('');
+
+  // 添加评论
+  const handleAddComment = () => {
+    if (!newCommentText.trim()) return;
+    
+    const newComment = {
+      id: Date.now().toString(),
+      author: '你', // 实际应用中应该使用当前用户信息
+      text: newCommentText,
+      date: formatDate(new Date()),
+      isEditing: false,
+      editedText: null,
+    };
+    
+    setComments([newComment, ...comments]);
+    setNewCommentText('');
+  };
+
+  // 删除评论
+  const handleDeleteComment = (commentId) => {
+    setComments(comments.filter((comment) => comment.id !== commentId));
+  };
+
+  // 开始编辑评论
+  const handleStartEdit = (commentId) => {
+    setComments(
+      comments.map((comment) =>
+        comment.id === commentId ? { ...comment, isEditing: true } : comment
+      )
+    );
+  };
+
+  // 取消编辑
+  const handleCancelEdit = (commentId) => {
+    setComments(
+      comments.map((comment) =>
+        comment.id === commentId
+          ? { ...comment, isEditing: false, editedText: null }
+          : comment
+      )
+    );
+  };
+
+  // 更新编辑中的评论内容
+  const handleEditCommentText = (commentId, text) => {
+    setComments(
+      comments.map((comment) =>
+        comment.id === commentId ? { ...comment, editedText: text } : comment
+      )
+    );
+  };
+
+  // 保存编辑
+  const handleSaveEdit = (commentId) => {
+    setComments(
+      comments.map((comment) => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            text: comment.editedText || comment.text,
+            isEditing: false,
+            editedText: null,
+          };
+        }
+        return comment;
+      })
+    );
+  };
+
+  // 日期格式化函数
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
   
   return (
-    <View style={styles.postContainer}>
-      <View style={styles.postHeader}>
-        <Text style={styles.postTitle}>{post.name}</Text>
-        <View style={styles.rating}>
-          <RatingStars rating={post.score} />
-          <Text style={styles.ratingNumber}>{post.score}</Text>
-        </View>
-      </View>
-      
-      {post.images && post.images.length > 0 && (
-        <View style={styles.postImages}>
-          {post.images.map((image, index) => (
-            <Image 
-              key={index} 
-              source={{ uri: image }} 
-              style={styles.postImage} 
-              resizeMode="cover"
-            />
-          ))}
-        </View>
-      )}
-      
-      <Text style={styles.postContent}>{post.content}</Text>
-      
-      <View style={styles.postMeta}>
-        <Text style={styles.postDate}>{post.createdAt}</Text>
-        <View style={styles.postTags}>
-          <Text style={styles.postTag}>{post.type}</Text>
-          <Text style={styles.postTag}>价格: {post.priceLevel === '1' ? '¥' : post.priceLevel === '2' ? '¥¥' : '¥¥¥'}</Text>
-        </View>
-      </View>
+<View style={styles.postContainer}>
+  <View style={styles.postHeader}>
+    <Text style={styles.postTitle}>{post.name}</Text>
+    <View style={styles.rating}>
+      <RatingStars rating={post.score} />
+      <Text style={styles.ratingNumber}>{post.score}</Text>
     </View>
+  </View>
+  
+  <View style={styles.postImagesContainer}>
+    {post.images.map((image, index) => (
+      <Image 
+        key={index} 
+        source={{ uri: image }} 
+        style={[
+          styles.postImage,
+          {
+            marginLeft: 0,
+            marginRight: 0,
+            marginBottom: index === post.images.length - 1 ? 0 : 8,
+          }
+        ]} 
+        resizeMode="cover"
+      />
+    ))}
+  </View>
+  
+  <Text style={styles.postContent}>{post.content}</Text>
+  
+  <View style={styles.postMeta}>
+    <Text style={styles.postDate}>{post.createdAt}</Text>
+    <View style={styles.postTags}>
+      <Text style={styles.postTag}>{post.type}</Text>
+      <Text style={styles.postTag}>Prices: {post.priceLevel === '1' ? '¥' : post.priceLevel === '2' ? '¥¥' : '¥¥¥'}</Text>
+    </View>
+  </View>
+  
+  {/* 评论输入区域 */}
+  <View style={styles.commentInputContainer}>
+    <TextInput
+      style={styles.commentInput}
+      placeholder="添加评论..."
+      value={newCommentText}
+      onChangeText={(text) => setNewCommentText(text)}
+    />
+    <Button
+      title="发布"
+      onPress={handleAddComment}
+      disabled={!newCommentText.trim()}
+    />
+  </View>
+  
+  {/* 评论列表 */}
+  <View style={styles.commentsContainer}>
+    {comments.length === 0 ? (
+      <Text style={styles.noCommentsText}>暂无评论</Text>
+    ) : (
+      comments.map((comment) => (
+        <View key={comment.id} style={styles.commentItem}>
+          <View style={styles.commentHeader}>
+            <Text style={styles.commentAuthor}>{comment.author}</Text>
+            <Text style={styles.commentDate}>{comment.date}</Text>
+          </View>
+          {comment.isEditing ? (
+            <View>
+              <TextInput
+                style={styles.commentEditInput}
+                value={comment.editedText || comment.text}
+                onChangeText={(text) => handleEditCommentText(comment.id, text)}
+              />
+              <View style={styles.commentActions}>
+                <Button title="取消" onPress={() => handleCancelEdit(comment.id)} />
+                <Button title="保存" onPress={() => handleSaveEdit(comment.id)} />
+              </View>
+            </View>
+          ) : (
+            <View>
+              <Text style={styles.commentText}>{comment.text}</Text>
+              <View style={styles.commentActions}>
+                <Button title="编辑" onPress={() => handleStartEdit(comment.id)} />
+                <Button title="删除" onPress={() => handleDeleteComment(comment.id)} />
+              </View>
+            </View>
+          )}
+        </View>
+      ))
+    )}
+  </View>
+</View>
+
   );
 };
 
 const MerchantDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  console.log(route)
   const merchantId = route.params?.merchantId || 1;
   const [merchant, setMerchant] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -126,17 +292,17 @@ const MerchantDetailScreen = () => {
   
   // 模拟获取商家信息，实际项目中应从API获取
   const getMerchantInfo = (merchantId) => {
-    // 这里使用RecommendationCard中的数据结构模拟商家信息
+    // 补充更完整的商家模拟数据
     return {
       id: merchantId,
       imageUrl: 'https://picsum.photos/600/400?random=' + merchantId,
-      title: '商家名称 ' + merchantId,
+      title: '美食天地餐厅 ' + merchantId,
       rating: 4.2,
-      location: '北京市朝阳区',
+      location: merchantId === 1 ? '北京市朝阳区' : merchantId === 2 ? '上海市黄浦区' : '广州市天河区',
       type: '餐厅',
-      priceRange: 2,
-      description: '这是一家很棒的商家，提供优质的产品和服务，深受顾客喜爱。',
-      tags: ['美食', '休闲', '聚会'],
+      priceRange: merchantId % 3 + 1,
+      description: '这是一家很棒的商家，提供优质的产品和服务，深受顾客喜爱。我们专注于为顾客提供美味、健康的餐食，环境舒适，服务周到。',
+      tags: ['美食', '休闲', '聚会', merchantId === 1 ? '牛排' : merchantId === 2 ? '甜点' : '快餐'],
       timeAgo: '1周前更新',
       recommenders: [
         {
@@ -148,9 +314,17 @@ const MerchantDetailScreen = () => {
           id: 2,
           name: '李四',
           avatarUrl: 'https://picsum.photos/100/100?random=102'
+        },
+        {
+          id: 3,
+          name: '王五',
+          avatarUrl: 'https://picsum.photos/100/100?random=103'
         }
       ],
-      websiteUrl: 'https://www.example.com/merchant/' + merchantId
+      websiteUrl: 'https://www.example.com/merchant/' + merchantId,
+      openingHours: '周一至周五: 10:00-22:00, 周六至周日: 09:00-23:00',
+      contact: '电话: 123-4567-8910',
+      address: merchantId === 1 ? '北京市朝阳区建国路88号' : merchantId === 2 ? '上海市黄浦区南京东路100号' : '广州市天河区天河路208号'
     };
   };
   
@@ -308,14 +482,14 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontWeight: '500',
   },
-  postImages: {
-    flexDirection: 'row',
+  postImagesContainer: {
+    width: '100%',
     overflow: 'hidden',
-    height: 150,
   },
   postImage: {
-    flex: 1,
-    height: '100%',
+    width: '100%',  // 占满容器宽度
+    height: 150,    // 固定高度
+    borderRadius: 8,
   },
   postContent: {
     color: '#cccccc',
@@ -349,6 +523,66 @@ const styles = StyleSheet.create({
   postsContainer: {
     paddingBottom: 20,
   },
+  // 评论相关样式
+  commentInputContainer: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#333333',
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: '#333333',
+    padding: 10,
+    borderRadius: 20,
+    marginRight: 10,
+    color: '#ffffff',
+  },
+  commentsContainer: {
+    padding: 16,
+  },
+  noCommentsText: {
+    color: '#888888',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  commentItem: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  commentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  commentAuthor: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  commentDate: {
+    color: '#888888',
+    fontSize: 12,
+  },
+  commentText: {
+    color: '#cccccc',
+    marginBottom: 8,
+  },
+  commentEditInput: {
+    backgroundColor: '#333333',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+    color: '#ffffff',
+  },
+  commentActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  // 加载和错误状态样式
   loadingContainer: {
     padding: 20,
     alignItems: 'center',
@@ -390,4 +624,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MerchantDetailScreen; 
+export default MerchantDetailScreen;
