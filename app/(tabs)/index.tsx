@@ -1,7 +1,8 @@
 // Posts.js
 import AddRecommendationModal from '@/components/Posts/AddRecommendationModal';
 import RecommendationCard from '@/components/Posts/RecommendationCard';
-import { post } from '@/utils/http';
+import { get, post } from '@/utils/http';
+import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import {
   SafeAreaView,
@@ -16,30 +17,44 @@ import {
 const Index = () => {
   const [isOpenRec, setIsOpenRec] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [circleId, setCircleId] = useState('');
+  const [circleList, setCircleList] = useState<any>([]);
   const [curBtnIndex, setCurBtnIndex] = useState(0);
 
   const recommendations = [
     {
-      id: 1,
-      title: "Porcine",
-      location: "Sydney, Australia",
-      type: "French Bistro",
-      category: "Food",
-      rating: 4.7,
-      description: "Cozy, pork-focused French bistro with old-world charm.",
-      tags: ["French", "Bistro", "Pork"],
-      timeAgo: "1 day ago",
-      userRating: 0,
-      userComent:'This place is amazing!',
+      name: "Porcine",
+      type: "food", // 与组件中的类型定义匹配
+      address: "Sydney, Australia", // 使用address字段而非location
+      score: "4", // 评分应与表单中的字符串类型一致
+      priceLevel: "3", // 价格水平（1-4）
+      content: "Cozy, pork-focused French bistro with old-world charm.", // 描述内容
+      tags: ["French", "Bistro", "Pork"], // 标签数组
+      url: "https://porcine-restaurant.com", // 网站URL
+      merchantId: 101, // 商家ID
+      circleId: 5, // 圈子ID
+      images: [
+        "https://example.com/porcine1.jpg",
+        "https://example.com/porcine2.jpg"
+      ], // 图片URL数组
+      latitude: -33.8688, // 纬度
+      longitude: 151.2093, // 经度
+      externalId: "porcine-123", // 外部ID
+      createdAt: "2025-06-26T10:30:00Z", // 创建时间
+      updatedAt: "2025-06-26T10:45:00Z", // 更新时间
     }];
 
   const getList = () => {
-    console.log('getList exe')
     post('/api/posts/list').then(res => {
       console.log(res)
     })
   }  
-
+  const getCircleList = () => {
+    get('/api/circles').then(res => {
+      setCircleList(res.data);
+    });
+  };
+  // getCircleList()
   // getList()
 
   const onCloseRec = () => {
@@ -51,11 +66,9 @@ const Index = () => {
   }
 
   const onSearch = () => {
-    console.log('Searching...',searchKeyword);
   }
 
   const onSetBtnIndex = (index: number) => {
-    console.log('onSetBtnIndex exe',index)
     setCurBtnIndex(index)
   }
 
@@ -74,7 +87,25 @@ const Index = () => {
       </View>
       
       <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
+         <View style={styles.pickerContainer}>
+          <Picker
+              selectedValue={circleId}
+              style={styles.picker}
+              onValueChange={(itemValue) => setCircleId(itemValue)}
+          >
+            <Picker.Item 
+              label='Select circle to filter merchants'
+                />
+              {/* {merchantList.map(type => (
+                <Picker.Item 
+                  label={type.label} 
+                  value={type.value} 
+                  key={type.value} 
+                />
+              ))} */}
+            </Picker>
+         </View>
+          <View style={styles.searchInputContainer}>
           <TextInput
             style={styles.searchInput}
             value={searchKeyword}
@@ -83,14 +114,13 @@ const Index = () => {
             placeholderTextColor="#666666"
           />
         </View>
-        <TouchableOpacity style={styles.filterBtn} onPress={onSearch}>
-          <Text style={styles.filterBtnText}>🔍 Filters</Text>
-        </TouchableOpacity>
       </View>
 
-        {/* <View >
-          <FilterBtnGroup />
-        </View> */}
+      <View style={styles.searchContainer}>
+        <TouchableOpacity style={styles.filterBtn} onPress={onSearch}>
+          <Text style={styles.filterBtnText}>🔍 Serach</Text>
+        </TouchableOpacity>
+      </View>
       
       <View style={styles.categoryTabs}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -124,11 +154,11 @@ const Index = () => {
 
       <ScrollView style={styles.content}>
         {recommendations.map((rec) => (
-          <RecommendationCard key={rec.id} recommendation={rec} />
+          <RecommendationCard key={rec.name} recommendation={rec} />
         ))}
       </ScrollView>
 
-      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec} />}
+      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec} type='add' item={null} />}
     </SafeAreaView>
   );
 };
@@ -175,6 +205,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     flexDirection: 'row',
+    alignItems:'center',
     gap: 12,
     backgroundColor: '#111111',
     borderBottomWidth: 1,
@@ -182,6 +213,7 @@ const styles = StyleSheet.create({
   },
   searchInputContainer: {
     flex: 1,
+    maxWidth:'50%'
   },
   searchInput: {
     backgroundColor: '#222222',
@@ -190,17 +222,36 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     color: '#ffffff',
     fontSize: 14,
+    height:50
+  },
+  pickerContainer: {
+    flex: 1, 
+    maxWidth: '50%',
+    marginVertical: 10, 
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    color: '#333',
+    marginVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 8,
   },
   filterBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     backgroundColor: '#333333',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
     justifyContent: 'center',
+    width:'100%'
   },
   filterBtnText: {
     color: '#ffffff',
     fontSize: 14,
+    textAlign:'center'
   },
   categoryTabs: {
     backgroundColor: '#111111',

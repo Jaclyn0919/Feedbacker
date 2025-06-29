@@ -77,6 +77,15 @@ const TabLayout = () => {
           }}
         />
         <Tabs.Screen
+          name="postDetail"
+          options={{
+            title: 'PostDetail',
+            tabBarItemStyle: {
+              display: 'none'
+            }
+          }}
+        />
+        <Tabs.Screen
           name="circles"
           options={{
             title: 'Circles',

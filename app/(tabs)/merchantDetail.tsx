@@ -1,25 +1,22 @@
 // MerchantDetailScreen.js
 import RatingStars from '@/components/Posts/components/RatingStars';
-import { useRoute } from '@react-navigation/native';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Button,
+  Dimensions,
   FlatList,
   Image,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
 
-// 模拟API调用的函数
 const fetchMerchantPosts = async (merchantId) => {
   try {
-    // 补充更完整的模拟数据，修复图片URL重复问题
     return [
       {
         id: 1,
@@ -61,7 +58,7 @@ const fetchMerchantPosts = async (merchantId) => {
         updatedAt: '2025-06-01',
         type: 'breakfast',
         priceLevel: '1',
-        images: ['https://picsum.photos/400/300?random=10', 'https://picsum.photos/400/300?random=11']
+        images: []
       }
     ];
   } catch (error) {
@@ -70,112 +67,32 @@ const fetchMerchantPosts = async (merchantId) => {
   }
 };
 
-// 帖子项组件 - 添加事件拦截优化滚动
-const PostItem = ({ post }) => {
-  const [comments, setComments] = useState([
-    {
-      id: post.id + '_comment1',
-      author: '用户1',
-      text: '非常同意，这家店的牛排确实很棒！',
-      date: '2025-06-16 10:30',
-      isEditing: false,
-      editedText: null,
-    },
-    {
-      id: post.id + '_comment2',
-      author: '用户2',
-      text: '我也来过，服务确实很周到，环境也不错。',
-      date: '2025-06-17 14:15',
-      isEditing: false,
-      editedText: null,
-    }
-  ]);
-  const [newCommentText, setNewCommentText] = useState('');
-
-  // 添加评论
-  const handleAddComment = () => {
-    if (!newCommentText.trim()) return;
-    
-    const newComment = {
-      id: Date.now().toString(),
-      author: '你', 
-      text: newCommentText,
-      date: formatDate(new Date()),
-      isEditing: false,
-      editedText: null,
-    };
-    
-    setComments([newComment, ...comments]);
-    setNewCommentText('');
-  };
-
-  // 删除评论
-  const handleDeleteComment = (commentId) => {
-    setComments(comments.filter((comment) => comment.id !== commentId));
-  };
-
-  // 开始编辑评论
-  const handleStartEdit = (commentId) => {
-    setComments(
-      comments.map((comment) =>
-        comment.id === commentId ? { ...comment, isEditing: true } : comment
-      )
-    );
-  };
-
-  // 取消编辑
-  const handleCancelEdit = (commentId) => {
-    setComments(
-      comments.map((comment) =>
-        comment.id === commentId
-          ? { ...comment, isEditing: false, editedText: null }
-          : comment
-      )
-    );
-  };
-
-  // 更新编辑中的评论内容
-  const handleEditCommentText = (commentId, text) => {
-    setComments(
-      comments.map((comment) =>
-        comment.id === commentId ? { ...comment, editedText: text } : comment
-      )
-    );
-  };
-
-  // 保存编辑
-  const handleSaveEdit = (commentId) => {
-    setComments(
-      comments.map((comment) => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            text: comment.editedText || comment.text,
-            isEditing: false,
-            editedText: null,
-          };
-        }
-        return comment;
-      })
-    );
-  };
-
-  // 日期格式化函数
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
+const PostItem = ({ post, onViewDetail }) => {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
   
+  const renderImages = () => {
+    if (!post.images || post.images.length === 0) return null;
+    return (
+        <Image 
+          source={{ uri: post.images[0] }} 
+          style={styles.postImage} 
+          resizeMode="cover"
+        />
+      );
+  };
+
   return (
     <View 
       style={styles.postContainer}
-      // 阻止事件向上传递，避免ScrollView拦截
       onTouchStart={(e) => e.stopPropagation()}
     >
+      <View style={styles.postHeader}>
+        <Text style={styles.postTitle}>{post.name}</Text>
+      </View>
+
       <View style={styles.postHeader}>
         <Text style={styles.postTitle}>{post.name}</Text>
         <View style={styles.rating}>
@@ -185,95 +102,60 @@ const PostItem = ({ post }) => {
       </View>
       
       <View style={styles.postImagesContainer}>
-        {post.images.map((image, index) => (
-          <Image 
-            key={index} 
-            source={{ uri: image }} 
-            style={[
-              styles.postImage,
-              {
-                marginLeft: 0,
-                marginRight: 0,
-                marginBottom: index === post.images.length - 1 ? 0 : 8,
-              }
-            ]} 
-            resizeMode="cover"
-          />
-        ))}
+        {renderImages()}
       </View>
+
+        {/* 卡片操作按钮 */}
+        <View style={styles.cardActions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, post.isLiked && styles.actionBtnLiked]}
+            onPress={() => {
+              console.log('like')
+            }}
+          >
+            <Text style={[styles.actionBtnText, post.isLiked && styles.actionBtnTextLiked]}>
+              {post.isLiked ? '❤️' : '🤍'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionBtn}
+            onPress={() => {
+              console.log('123')
+            }}
+          >
+            <AntDesign name="delete" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       
       <Text style={styles.postContent}>{post.content}</Text>
       
       <View style={styles.postMeta}>
-        <Text style={styles.postDate}>{post.createdAt}</Text>
+        <Text style={styles.postDate}>{formatDate(post.createdAt)}</Text>
         <View style={styles.postTags}>
           <Text style={styles.postTag}>{post.type}</Text>
-          <Text style={styles.postTag}>Prices: {post.priceLevel === '1' ? '¥' : post.priceLevel === '2' ? '¥¥' : '¥¥¥'}</Text>
+          <Text style={styles.postTag}>Prices: {post.priceLevel === '1' ? '$' : post.priceLevel === '2' ? '$$' : '$$$'}</Text>
         </View>
       </View>
+
+    <TouchableOpacity 
+      onPress={() => onViewDetail(post.id)}
+    >
+      <Text style={styles.actionButtonText}>
+        <Text style={styles.actionButtonIcon}>📖</Text> View This Post Detail
+      </Text>
+    </TouchableOpacity>
       
-      {/* 评论输入区域 */}
-      <View style={styles.commentInputContainer}>
-        <TextInput
-          style={styles.commentInput}
-          placeholder="添加评论..."
-          value={newCommentText}
-          onChangeText={(text) => setNewCommentText(text)}
-        />
-        <Button
-          title="发布"
-          onPress={handleAddComment}
-          disabled={!newCommentText.trim()}
-        />
-      </View>
-      
-      {/* 评论列表 */}
-      <View style={styles.commentsContainer}>
-        {comments.length === 0 ? (
-          <Text style={styles.noCommentsText}>暂无评论</Text>
-        ) : (
-          comments.map((comment) => (
-            <View key={comment.id} style={styles.commentItem}>
-              <View style={styles.commentHeader}>
-                <Text style={styles.commentAuthor}>{comment.author}</Text>
-                <Text style={styles.commentDate}>{comment.date}</Text>
-              </View>
-              {comment.isEditing ? (
-                <View>
-                  <TextInput
-                    style={styles.commentEditInput}
-                    value={comment.editedText || comment.text}
-                    onChangeText={(text) => handleEditCommentText(comment.id, text)}
-                  />
-                  <View style={styles.commentActions}>
-                    <Button title="取消" onPress={() => handleCancelEdit(comment.id)} />
-                    <Button title="保存" onPress={() => handleSaveEdit(comment.id)} />
-                  </View>
-                </View>
-              ) : (
-                <View>
-                  <Text style={styles.commentText}>{comment.text}</Text>
-                  <View style={styles.commentActions}>
-                    <Button title="编辑" onPress={() => handleStartEdit(comment.id)} />
-                    <Button title="删除" onPress={() => handleDeleteComment(comment.id)} />
-                  </View>
-                </View>
-              )}
-            </View>
-          ))
-        )}
-      </View>
     </View>
   );
 };
 
 const MerchantDetailScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const merchantId = route.params?.item?.merchantId || 1;
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  console.log(route)
   
   useEffect(() => {
     if (!merchantId) {
@@ -285,7 +167,6 @@ const MerchantDetailScreen = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
         // 获取商家帖子
         const postsData = await fetchMerchantPosts(merchantId);
         setPosts(postsData);
@@ -300,70 +181,42 @@ const MerchantDetailScreen = () => {
     
     fetchData();
   }, [merchantId]);
+  console.log('merchantDetail route is',route)
   
-  // 渲染列表内容（根据不同状态）
-  const RenderListContent = ({post}) => {
-    if (isLoading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3cdddd" />
-          <Text style={styles.loadingText}>Loading posts...</Text>
-        </View>
-      );
-    }
-    
-    if (error) {
-      return (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity 
-            style={styles.retryButton}
-            onPress={() => {
-              setError('');
-              setIsLoading(true);
-              fetchMerchantPosts(merchantId).then(data => setPosts(data)).finally(() => setIsLoading(false));
-            }}
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-    
-    if (posts.length === 0) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No related posts yet</Text>
-        </View>
-      );
-    }
-    
-    // 正常渲染帖子列表
-    return    <PostItem key={post.id} post={post} />
-  };
+  const renderItem = ({ item }) => (
+    <PostItem 
+      post={item}
+      onViewDetail={(postId) => {
+        // 优化：实现帖子详情导航
+        navigation.navigate('postDetail', { postId });
+      }}
+    />
+  );
+  
+  // 优化：简化列表空状态渲染
+  const renderEmpty = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>No related posts yet</Text>
+    </View>
+  );
   
   return (
     <SafeAreaView style={styles.container}>
-      {/* 直接使用FlatList作为主滚动容器 */}
       <FlatList
-        // 关键属性：开启嵌套滚动支持（iOS必加）
         nestedScrollEnabled={true}
-        // Android平台优化：控制滚动边界效果
         overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
-        // iOS平台优化：加快滚动减速
         decelerationRate={Platform.OS === 'ios' ? 'fast' : 'normal'}
-        // 性能优化：减少不必要的渲染
         removeClippedSubviews={true}
         initialNumToRender={5}
         maxToRenderPerBatch={10}
         windowSize={15}
-        // 列表配置
         data={posts}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({item}) => <RenderListContent post={item} />}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmpty}
         contentContainerStyle={[
           styles.postsContainer,
-          { paddingHorizontal: 16, paddingBottom: 32 } // 合并原postsSection的样式
+          { paddingHorizontal: 16, paddingBottom: 32 }
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -372,13 +225,13 @@ const MerchantDetailScreen = () => {
   );
 };
 
+const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
   },
   postsContainer: {
-    // 移除了paddingHorizontal，改为在FlatList的contentContainerStyle中设置
     paddingBottom: 20,
   },
   postContainer: {
@@ -414,10 +267,11 @@ const styles = StyleSheet.create({
   postImagesContainer: {
     width: '100%',
     overflow: 'hidden',
+    backgroundColor: '#222222',
   },
   postImage: {
-    width: '100%',  // 占满容器宽度
-    height: 150,    // 固定高度
+    width: '100%',
+    height: width * 0.45,
     borderRadius: 8,
   },
   postContent: {
@@ -449,66 +303,46 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 12,
   },
-  // 评论相关样式
-  commentInputContainer: {
-    padding: 16,
+    cardActions: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
     flexDirection: 'row',
+    gap: 8,
+    zIndex: 10,
+  },
+  actionBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 16,
+    padding: 8,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  actionBtnLiked: {
+    backgroundColor: '#ff3e6c',
+    borderColor: '#ff3e6c',
+  },
+  actionBtnText: {
+    fontSize: 16,
+    color: '#ffffff',
+  },
+  actionBtnTextLiked: {
+    color: '#ffffff',
+  },
+  actionButtonText: {
+    color: '#3cdddd',
+    fontSize: 14,
+    padding: 16,
     borderTopWidth: 1,
     borderTopColor: '#333333',
   },
-  commentInput: {
-    flex: 1,
-    backgroundColor: '#333333',
-    padding: 10,
-    borderRadius: 20,
-    marginRight: 10,
-    color: '#ffffff',
+  actionButtonIcon: {
+    marginRight: 5,
   },
-  commentsContainer: {
-    padding: 16,
-  },
-  noCommentsText: {
-    color: '#888888',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  commentItem: {
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333333',
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  commentAuthor: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-  },
-  commentDate: {
-    color: '#888888',
-    fontSize: 12,
-  },
-  commentText: {
-    color: '#cccccc',
-    marginBottom: 8,
-  },
-  commentEditInput: {
-    backgroundColor: '#333333',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
-    color: '#ffffff',
-  },
-  commentActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
-  },
-  // 加载和错误状态样式
   loadingContainer: {
     padding: 20,
     alignItems: 'center',
@@ -543,6 +377,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    flex: 1,
   },
   emptyText: {
     color: '#888888',
@@ -550,4 +385,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MerchantDetailScreen;  
+export default MerchantDetailScreen;

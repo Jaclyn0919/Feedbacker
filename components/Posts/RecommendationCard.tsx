@@ -6,7 +6,6 @@ import {
   Image,
   StyleSheet,
   Text,
-  // TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
@@ -23,9 +22,6 @@ const RecommendationCard = ({
   const [isOpenRec, setIsOpenRec] = useState(false);
 
   const route = useRoute();
-  console.log(route)
-  console.log('recommendation is',recommendation)
-
 
   // 渲染价格范围
   const renderPriceRange = (priceRange: number) => {
@@ -43,8 +39,6 @@ const RecommendationCard = ({
   }
 
  const goMechantDetail = (item: any) => {
-  console.log('goMechantDetail exe', item);
-  // 移除 as never 类型断言，正确传递路由名称和参数
   navigation.navigate('merchantDetail', {
     item
   });
