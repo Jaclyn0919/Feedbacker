@@ -67,11 +67,22 @@ const fetchMerchantPosts = async (merchantId) => {
   }
 };
 
-const PostItem = ({ post, onViewDetail }) => {
+const PostItem = ({ post }) => {
+  const route = useRoute();
+  const navigation = useNavigation();
+
+  const onViewDetail = () => {
+    navigation.navigate('postDetail', { postId:post.id,item:route?.params?.item });
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
+
+  const onLikePosts = () => {
+
+  }
   
   const renderImages = () => {
     if (!post.images || post.images.length === 0) return null;
@@ -90,7 +101,7 @@ const PostItem = ({ post, onViewDetail }) => {
       onTouchStart={(e) => e.stopPropagation()}
     >
       <View style={styles.postHeader}>
-        <Text style={styles.postTitle}>{post.name}</Text>
+        <Text style={styles.postTitle}>{route?.params?.item?.name || ''}</Text>
       </View>
 
       <View style={styles.postHeader}>
@@ -111,6 +122,7 @@ const PostItem = ({ post, onViewDetail }) => {
             style={[styles.actionBtn, post.isLiked && styles.actionBtnLiked]}
             onPress={() => {
               console.log('like')
+              onLikePosts()
             }}
           >
             <Text style={[styles.actionBtnText, post.isLiked && styles.actionBtnTextLiked]}>
@@ -126,8 +138,6 @@ const PostItem = ({ post, onViewDetail }) => {
             <AntDesign name="delete" size={24} color="white" />
           </TouchableOpacity>
         </View>
-      
-      <Text style={styles.postContent}>{post.content}</Text>
       
       <View style={styles.postMeta}>
         <Text style={styles.postDate}>{formatDate(post.createdAt)}</Text>
@@ -151,7 +161,6 @@ const PostItem = ({ post, onViewDetail }) => {
 
 const MerchantDetailScreen = () => {
   const route = useRoute();
-  const navigation = useNavigation();
   const merchantId = route.params?.item?.merchantId || 1;
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -181,19 +190,13 @@ const MerchantDetailScreen = () => {
     
     fetchData();
   }, [merchantId]);
-  console.log('merchantDetail route is',route)
   
   const renderItem = ({ item }) => (
     <PostItem 
       post={item}
-      onViewDetail={(postId) => {
-        // 优化：实现帖子详情导航
-        navigation.navigate('postDetail', { postId });
-      }}
     />
   );
   
-  // 优化：简化列表空状态渲染
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyText}>No related posts yet</Text>
@@ -273,12 +276,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: width * 0.45,
     borderRadius: 8,
-  },
-  postContent: {
-    color: '#cccccc',
-    fontSize: 14,
-    padding: 16,
-    lineHeight: 20,
   },
   postMeta: {
     flexDirection: 'row',

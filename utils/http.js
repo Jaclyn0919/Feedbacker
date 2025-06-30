@@ -2,11 +2,9 @@ import axios from 'axios';
 import { Alert } from 'react-native';
 import { getToken } from './auth';
 
-// 需要从存储中获取token
-
 // 创建axios实例
 const service = axios.create({
-  baseURL: 'http://13.210.204.61/', 
+  baseURL: 'http://3.27.156.164/', 
   timeout: 10000, 
 });
 

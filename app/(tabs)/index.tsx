@@ -1,18 +1,18 @@
 // Posts.js
 import AddRecommendationModal from '@/components/Posts/AddRecommendationModal';
 import RecommendationCard from '@/components/Posts/RecommendationCard';
-import { get, post } from '@/utils/http';
+import { get } from '@/utils/http';
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const Index = () => {
   const [isOpenRec, setIsOpenRec] = useState(false);
@@ -42,20 +42,27 @@ const Index = () => {
       externalId: "porcine-123", // 外部ID
       createdAt: "2025-06-26T10:30:00Z", // 创建时间
       updatedAt: "2025-06-26T10:45:00Z", // 更新时间
-    }];
+  }];
+  const typeList = ['All', 'Food', 'Travel', 'Business']
 
-  const getList = () => {
-    post('/api/posts/list').then(res => {
-      console.log(res)
-    })
+  const getMechantList = () => {
+    // const data = {}
+    // post('/api/posts/list').then(res => {
+    //   console.log(res)
+    // })
   }  
   const getCircleList = () => {
-    get('/api/circles').then(res => {
-      setCircleList(res.data);
+    get('/api/circles/mine').then(res => {
+      // setCircleList(res.data);
+      console.log('res is',res)
     });
   };
+
+  const onLikeMerchant = () => {
+
+  }
   // getCircleList()
-  // getList()
+  // getMechantList()
 
   const onCloseRec = () => {
     setIsOpenRec(false)
@@ -65,15 +72,13 @@ const Index = () => {
     setIsOpenRec(true)
   }
 
-  const onSearch = () => {
-  }
-
   const onSetBtnIndex = (index: number) => {
     setCurBtnIndex(index)
   }
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView> 
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.logo}>Feedbacker</Text>
@@ -96,7 +101,7 @@ const Index = () => {
             <Picker.Item 
               label='Select circle to filter merchants'
                 />
-              {/* {merchantList.map(type => (
+              {/* {circleList.map(type => (
                 <Picker.Item 
                   label={type.label} 
                   value={type.value} 
@@ -117,15 +122,14 @@ const Index = () => {
       </View>
 
       <View style={styles.searchContainer}>
-        <TouchableOpacity style={styles.filterBtn} onPress={onSearch}>
+        <TouchableOpacity style={styles.filterBtn} onPress={getMechantList}>
           <Text style={styles.filterBtnText}>🔍 Serach</Text>
         </TouchableOpacity>
       </View>
       
       <View style={styles.categoryTabs}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.tabsContainer}>
-            {['All', 'Food', 'Travel', 'Business'].map((category,index) => (
+            {typeList.map((category,index) => (
               <TouchableOpacity
                 key={category}
                 onPress={() => onSetBtnIndex(index)}
@@ -145,20 +149,18 @@ const Index = () => {
               </TouchableOpacity>
             ))}
           </View>
-        </ScrollView>
       </View>
       
       <View style={styles.viewingInfo}>
         <Text style={styles.viewingText}>📍 Viewing: All Merchant Recommendations</Text>
       </View>
 
-      <ScrollView style={styles.content}>
-        {recommendations.map((rec) => (
-          <RecommendationCard key={rec.name} recommendation={rec} />
-        ))}
-      </ScrollView>
+      {recommendations.map((rec) => (
+        <RecommendationCard key={rec.name} recommendation={rec} />
+      ))}
 
-      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec} type='add' item={null} />}
+      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec} type='add' item={null} circleList={circleList}/>}
+      </ScrollView> 
     </SafeAreaView>
   );
 };
@@ -291,9 +293,6 @@ const styles = StyleSheet.create({
   viewingText: {
     fontSize: 14,
     color: '#888888',
-  },
-  content: {
-    padding: 20,
   },
   developerNote: {
     backgroundColor: '#111111',

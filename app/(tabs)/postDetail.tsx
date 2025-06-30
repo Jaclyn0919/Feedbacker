@@ -3,16 +3,16 @@ import RatingStars from '@/components/Posts/components/RatingStars';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Button,
-    Dimensions,
-    Image,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Button,
+  Dimensions,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -114,7 +114,7 @@ const CommentItem = ({ comment, onEdit, onDelete, onSave, onCancel }) => {
         <View>
           <Text style={styles.commentText}>{comment.text}</Text>
           <View style={styles.commentActions}>
-            <Button title="编辑" onPress={handleStartEdit} />
+            {/* <Button title="编辑" onPress={handleStartEdit} /> */}
             <Button title="删除" onPress={() => onDelete(comment.id)} />
           </View>
         </View>
@@ -326,7 +326,9 @@ const PostDetailScreen = () => {
         {/* 顶部返回按钮 */}
         <TouchableOpacity
           style={{ margin: SIZES.paddingMedium }}
-          onPress={() => navigation.navigate('merchantDetail')}
+          onPress={() => navigation.navigate('merchantDetail', {
+            item:route?.params?.item
+          })}
         >
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>

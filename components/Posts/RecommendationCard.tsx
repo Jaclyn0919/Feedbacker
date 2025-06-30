@@ -1,5 +1,4 @@
 // import { Picker } from '@react-native-picker/picker';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
@@ -72,22 +71,6 @@ const RecommendationCard = ({
             <Text style={[styles.actionBtnText, isLiked && styles.actionBtnTextLiked]}>
               {isLiked ? '❤️' : '🤍'}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.actionBtn}
-            onPress={() => {
-              console.log('123')
-            }}
-          >
-            <AntDesign name="delete" size={24} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.actionBtn}
-            onPress={() => {
-              setIsOpenRec(true)
-            }}
-          >
-            <AntDesign name="edit" size={24} color="white" />
           </TouchableOpacity>
         </View>
         

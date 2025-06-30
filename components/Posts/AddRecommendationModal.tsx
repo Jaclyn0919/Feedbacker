@@ -1,4 +1,3 @@
-import { get } from '@/utils/http';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -38,6 +37,7 @@ type Props = {
   onCloseRec: () => void;
   type: 'add' | 'edit';
   item?: any; // 编辑时传入的项目数据
+  circleList?:any
 };
 
 const { width, height } = Dimensions.get('window');
@@ -66,7 +66,7 @@ const priceLevels = [
   { label: '$$$$Very Expensive', value: '4' },
 ];
 
-const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item }: Props) => {
+const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }: Props) => {
   const [formData, setFormData] = useState<formDataType>({
     name: '',
     type: 'food',
@@ -82,7 +82,6 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item }: Props) =>
   const [merchantId, setMerchantId] = useState<any>(null);
   const [merchantList, setMerchantList] = useState<any>([]);
   const [circleId, setCircleId] = useState<any>(null);
-  const [circleList, setCircleList] = useState<any>([]);
   const [pickedImages, setPickedImages] = useState<any>([]);
 
   // 处理表单初始化 - 根据type和item填充数据
@@ -141,11 +140,6 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item }: Props) =>
     // })
   };
 
-  const getCircleList = () => {
-    get('/api/circles').then(res => {
-      setCircleList(res.data);
-    });
-  };
 
   // 处理表单输入变化
   const handleInputChange = (field: keyof formDataType, value: string) => {
