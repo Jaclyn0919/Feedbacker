@@ -1,4 +1,5 @@
 // import { Picker } from '@react-native-picker/picker';
+import { post } from '@/utils/http';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
@@ -37,6 +38,18 @@ const RecommendationCard = ({
     setIsOpenRec(false)
   }
 
+  const onLikeMerchant = (merchantId:number|string) => {
+    const data = {
+      merchantId
+    }
+    const flag = true
+    const api = flag ? '/api/merchants/favorite' : '/api/merchants/unfavorite'
+    post(api,data).then(res => {
+      // setCircleList(res.data);
+      console.log('res is',res)
+    });
+  }
+
  const goMechantDetail = (item: any) => {
   navigation.navigate('merchantDetail', {
     item
@@ -65,7 +78,7 @@ const RecommendationCard = ({
             style={[styles.actionBtn, isLiked && styles.actionBtnLiked]}
             onPress={() => {
               setIsLiked(!isLiked);
-              if (onLike) onLike(recommendation.id);
+              onLikeMerchant(recommendation.merchantId)
             }}
           >
             <Text style={[styles.actionBtnText, isLiked && styles.actionBtnTextLiked]}>

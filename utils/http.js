@@ -4,7 +4,7 @@ import { getToken } from './auth';
 
 // 创建axios实例
 const service = axios.create({
-  baseURL: 'http://3.27.156.164/', 
+  baseURL: 'http://3.27.156.164:8080/', 
   timeout: 10000, 
 });
 

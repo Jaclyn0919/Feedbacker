@@ -1,7 +1,7 @@
 // Posts.js
 import AddRecommendationModal from '@/components/Posts/AddRecommendationModal';
 import RecommendationCard from '@/components/Posts/RecommendationCard';
-import { get } from '@/utils/http';
+import { post } from '@/utils/http';
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import {
@@ -52,15 +52,12 @@ const Index = () => {
     // })
   }  
   const getCircleList = () => {
-    get('/api/circles/mine').then(res => {
+    console.log('getCircleList exe')
+    post('/api/circles/mine').then(res => {
       // setCircleList(res.data);
       console.log('res is',res)
     });
   };
-
-  const onLikeMerchant = () => {
-
-  }
   // getCircleList()
   // getMechantList()
 
@@ -155,10 +152,16 @@ const Index = () => {
         <Text style={styles.viewingText}>📍 Viewing: All Merchant Recommendations</Text>
       </View>
 
-      {recommendations.map((rec) => (
-        <RecommendationCard key={rec.name} recommendation={rec} />
-      ))}
-
+      {recommendations.length > 0 ? (
+        recommendations.map((rec) => (
+          <RecommendationCard key={rec.name} recommendation={rec} />
+        ))
+      ) : (
+        <View >
+          <Text style={[styles.viewingText,{textAlign:'center',paddingVertical: 8,fontSize: 16,marginTop:12}]}>No any merchant found.</Text>
+        </View>
+      )}
+     
       {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec} type='add' item={null} circleList={circleList}/>}
       </ScrollView> 
     </SafeAreaView>
@@ -220,7 +223,7 @@ const styles = StyleSheet.create({
   searchInput: {
     backgroundColor: '#222222',
     borderRadius: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
     paddingVertical: 8,
     color: '#ffffff',
     fontSize: 14,
@@ -313,6 +316,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  noResultsContainer: {},
+  noResultsText:{},
 });
 
 export default Index;
