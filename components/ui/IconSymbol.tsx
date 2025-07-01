@@ -1,12 +1,5 @@
-<<<<<<< HEAD
-// Fallback for using MaterialIcons on Android and web.
-
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
-=======
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
->>>>>>> main
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
@@ -23,14 +16,10 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
-<<<<<<< HEAD
-} as IconMapping;
-=======
   'chevron-down': 'keyboard-arrow-down', // 添加下拉箭头映射
   'xmark': 'close', // 添加关闭图标映射
   'cloud.arrow.up': 'cloud-upload', // 添加上传图标映射
 } as unknown as IconMapping;
->>>>>>> main
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
@@ -50,8 +39,4 @@ export function IconSymbol({
   weight?: SymbolWeight;
 }) {
   return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> main
