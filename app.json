@@ -16,7 +16,12 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+<<<<<<< HEAD
       "edgeToEdgeEnabled": true
+=======
+      "edgeToEdgeEnabled": true,
+       "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+>>>>>>> main
     },
     "web": {
       "bundler": "metro",
