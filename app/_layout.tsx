@@ -1,11 +1,22 @@
+<<<<<<< HEAD
+=======
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { GlobalContextProvider } from '@/utils/GlobalContext';
+>>>>>>> main
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+<<<<<<< HEAD
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+=======
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'react-native-reanimated';
+
+>>>>>>> main
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
@@ -18,6 +29,7 @@ export default function RootLayout() {
   }
 
   return (
+<<<<<<< HEAD
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -25,5 +37,18 @@ export default function RootLayout() {
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+=======
+    <GestureHandlerRootView>
+      <GlobalContextProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </GlobalContextProvider>
+    </GestureHandlerRootView>
+>>>>>>> main
   );
 }
