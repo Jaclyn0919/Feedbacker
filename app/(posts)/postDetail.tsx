@@ -1,5 +1,5 @@
 // PostDetailScreen.js
-import RatingStars from '@/app/(posts)/components/RatingStars';
+import RatingStars from '@/components/posts/RatingStars';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {

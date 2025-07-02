@@ -1,6 +1,6 @@
 // import { Picker } from '@react-native-picker/picker';
-import AddRecommendationModal from '@/app/(posts)/components/AddRecommendationModal';
-import RatingStars from '@/app/(posts)/components/RatingStars';
+import AddRecommendationModal from '@/components/posts/AddRecommendationModal';
+import RatingStars from '@/components/posts/RatingStars';
 import { post } from '@/utils/http';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';

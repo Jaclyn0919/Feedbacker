@@ -1,5 +1,5 @@
 // MerchantDetailScreen.js
-import RatingStars from '@/app/(posts)/components/RatingStars';
+import RatingStars from '@/components/posts/RatingStars';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';

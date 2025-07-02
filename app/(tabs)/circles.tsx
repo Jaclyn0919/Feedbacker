@@ -1,9 +1,9 @@
 // app/(tabs)/circles.tsx
 
-import AddFriendModal from '@/app/(circles)/components/AddFriendModal';
-import CircleGroupCard from '@/app/(circles)/components/CircleGroupCard';
-import CircleNotificationsModal from '@/app/(circles)/components/CircleNotificationsModal';
-import CreateCircleModal from '@/app/(circles)/components/CreateCircleModal';
+import AddFriendModal from '@/components/circles/AddFriendModal';
+import CircleGroupCard from '@/components/circles/CircleGroupCard';
+import CircleNotificationsModal from '@/components/circles/CircleNotificationsModal';
+import CreateCircleModal from '@/components/circles/CreateCircleModal';
 import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
