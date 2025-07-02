@@ -1,5 +1,5 @@
 // MerchantDetailScreen.js
-import RatingStars from '@/components/Posts/components/RatingStars';
+import RatingStars from '@/app/(posts)/components/RatingStars';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
@@ -72,7 +72,7 @@ const PostItem = ({ post }) => {
   const navigation = useNavigation();
 
   const onViewDetail = () => {
-    navigation.navigate('postDetail', { postId:post.id,item:route?.params?.item });
+    navigation.navigate('(posts)/postDetail', { postId:post.id,item:route?.params?.item });
   };
 
   const formatDate = (dateString) => {

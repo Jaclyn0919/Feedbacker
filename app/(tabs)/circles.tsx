@@ -1,187 +1,211 @@
-// Circles.js
-import React from 'react';
+// app/(tabs)/circles.tsx
+
+import AddFriendModal from '@/app/(circles)/components/AddFriendModal';
+import CircleGroupCard from '@/app/(circles)/components/CircleGroupCard';
+import CircleNotificationsModal from '@/app/(circles)/components/CircleNotificationsModal';
+import CreateCircleModal from '@/app/(circles)/components/CreateCircleModal';
+import { AntDesign } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const Circles = () => {
+  const router = useRouter();
+
+  const [isCreateModalVisible, setCreateModalVisible] = useState(false);
+  const [isInviteModalVisible, setInviteModalVisible] = useState(false);
+  const [isNotifModalVisible, setNotifModalVisible] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+  const [circleName, setCircleName] = useState('');
+  const [circleDescription, setCircleDescription] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+
+  const toggleCreateModal = () => setCreateModalVisible(!isCreateModalVisible);
+  const toggleInviteModal = () => setInviteModalVisible(!isInviteModalVisible);
+
+  const handleCreate = () => {
+    console.log('Creating circle:', circleName, circleDescription);
+    setCreateModalVisible(false);
+    setCircleName('');
+    setCircleDescription('');
+  };
+
+  const handleInvite = () => {
+    console.log('Inviting:', inviteEmail);
+    setInviteModalVisible(false);
+    setInviteEmail('');
+  };
+
+  const groups = [
+    {
+      id: '1',
+      groupName: 'Close Friends',
+      owner: 'Alex Johnson',
+      currentUserName: 'Alex Johnson',
+      members: [
+        { name: 'Alex Johnson', role: 'The Legend', level: 15, avatar: '🧔🏻' },
+        { name: 'Rowan Kim', role: 'The Legend', level: 14, avatar: '👩🏻' },
+        { name: 'Jordan Lee', role: 'The Legend', level: 12, avatar: '👨🏼' },
+        { name: 'Jamie Smith', role: 'The Oracle', level: 8, avatar: '👩🏽' },
+      ],
+    },
+    {
+      id: '2',
+      groupName: 'Travel Explorers',
+      owner: 'Jordan Lee',
+      currentUserName: 'Alex Johnson',
+      members: [
+        { name: 'Jordan Lee', role: 'Explorer', level: 9, avatar: '🧳' },
+        { name: 'Emily Tan', role: 'Navigator', level: 6, avatar: '🌏' },
+      ],
+    },
+  ];
+
+  const dummyNotifications = [
+    {
+      groupName: 'Close Friends',
+      notifications: [
+        { id: '1', message: 'Alex sent a new message.' },
+        { id: '2', message: 'Rowan joined the group.' },
+      ],
+    },
+    {
+      groupName: 'Travel Explorers',
+      notifications: [
+        { id: '3', message: 'Emily shared a new location.' },
+      ],
+    },
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.pageHeader}>
-        <Text style={styles.pageTitle}>Circles</Text>
-        <Text style={styles.pageSubtitle}>Social Groups & Communities</Text>
+        <View>
+          <Text style={styles.pageTitle}>Circles</Text>
+          <Text style={styles.pageSubtitle}>Social Groups & Communities</Text>
+        </View>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity onPress={() => setNotifModalVisible(true)}>
+            <AntDesign name="bells" size={20} color="#00BFFF" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleCreateModal}>
+            <Text style={styles.createButton}>＋ Create</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView style={styles.content}>
-        <View style={styles.developerNote}>
-          <Text style={styles.noteTitle}>Developer C - Circles Module</Text>
-          <Text style={styles.noteText}>
-            Features: Create circles, Invite users, Handle invitations, Join requests, 
-            Admin functions, Member management, View circle posts
-          </Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.searchRow}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search circles..."
+            placeholderTextColor="#888"
+            value={searchKeyword}
+            onChangeText={setSearchKeyword}
+          />
+          {searchKeyword.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchKeyword('')}>
+              <Text style={styles.clearBtn}>×</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* Sample Circle */}
-        <View style={styles.circleCard}>
-          <View style={styles.circleHeader}>
-            <View style={styles.circleAvatar}>
-              <Text style={styles.circleAvatarText}>🍕</Text>
-            </View>
-            <View style={styles.circleInfo}>
-              <Text style={styles.circleName}>Food Lovers Sydney</Text>
-              <Text style={styles.circleMemberCount}>124 members</Text>
-            </View>
-          </View>
-          <Text style={styles.circleDescription}>
-            A community for food enthusiasts in Sydney. Share your favorite restaurants, 
-            hidden gems, and food experiences.
-          </Text>
-          <View style={styles.circleActions}>
-            <TouchableOpacity style={styles.circleActionBtn}>
-              <Text style={styles.circleActionText}>👥 Join</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.circleActionBtn}>
-              <Text style={styles.circleActionText}>📋 View Posts</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Another Sample Circle */}
-        <View style={styles.circleCard}>
-          <View style={styles.circleHeader}>
-            <View style={styles.circleAvatar}>
-              <Text style={styles.circleAvatarText}>✈️</Text>
-            </View>
-            <View style={styles.circleInfo}>
-              <Text style={styles.circleName}>Travel Explorers</Text>
-              <Text style={styles.circleMemberCount}>89 members</Text>
-            </View>
-          </View>
-          <Text style={styles.circleDescription}>
-            Discover amazing travel destinations and share your adventures with 
-            fellow travel enthusiasts.
-          </Text>
-          <View style={styles.circleActions}>
-            <TouchableOpacity style={styles.circleActionBtn}>
-              <Text style={styles.circleActionText}>👥 Join</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.circleActionBtn}>
-              <Text style={styles.circleActionText}>📋 View Posts</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {groups
+          .filter(g =>
+            g.groupName.toLowerCase().includes(searchKeyword.toLowerCase())
+          )
+          .map(group => (
+            <CircleGroupCard
+              key={group.id}
+              {...group}
+              onAddFriend={toggleInviteModal}
+            />
+          ))}
       </ScrollView>
+
+      {/* Modals */}
+      <CreateCircleModal
+        isVisible={isCreateModalVisible}
+        onClose={toggleCreateModal}
+        circleName={circleName}
+        setCircleName={setCircleName}
+        circleDescription={circleDescription}
+        setCircleDescription={setCircleDescription}
+        onSubmit={handleCreate}
+      />
+      <AddFriendModal
+        isVisible={isInviteModalVisible}
+        onClose={toggleInviteModal}
+        inviteEmail={inviteEmail}
+        setInviteEmail={setInviteEmail}
+        onSubmit={handleInvite}
+      />
+      <CircleNotificationsModal
+        isVisible={isNotifModalVisible}
+        onClose={() => setNotifModalVisible(false)}
+        notificationsByGroup={dummyNotifications}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
+  container: { flex: 1, backgroundColor: '#000000' },
   pageHeader: {
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#333333',
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 10,
   },
-  pageTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexShrink: 1,
   },
-  pageSubtitle: {
-    color: '#888888',
-    fontSize: 14,
-  },
-  content: {
-    padding: 20,
-  },
-  developerNote: {
-    backgroundColor: '#111111',
-    borderWidth: 1,
-    borderColor: '#333333',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  noteTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  noteText: {
-    color: '#888888',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  circleCard: {
-    backgroundColor: '#111111',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#333333',
-  },
-  circleHeader: {
+  pageTitle: { fontSize: 24, fontWeight: 'bold', color: '#ffffff' },
+  pageSubtitle: { color: '#888888', fontSize: 14 },
+  createButton: { color: '#00BFFF', fontSize: 16, fontWeight: 'bold' },
+
+  searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  circleAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#222222',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  circleAvatarText: {
-    fontSize: 20,
-  },
-  circleInfo: {
-    flex: 1,
-  },
-  circleName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  circleMemberCount: {
-    fontSize: 12,
-    color: '#888888',
-    marginTop: 2,
-  },
-  circleDescription: {
-    fontSize: 14,
-    color: '#cccccc',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  circleActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  circleActionBtn: {
-    backgroundColor: '#222222',
+    backgroundColor: '#1a1a1a',
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 16,
+    borderRadius: 6,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#333',
   },
-  circleActionText: {
+  searchInput: {
+    flex: 1,
+    paddingVertical: 10,
+    fontSize: 16,
     color: '#ffffff',
-    fontSize: 14,
+    outlineWidth: 0,
+  },
+  clearBtn: {
+    color: '#888',
+    fontSize: 20,
+    marginLeft: 8,
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
 });
 

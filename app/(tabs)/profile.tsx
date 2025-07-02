@@ -1,300 +1,310 @@
-// Profile.js
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const Profile = () => {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.pageHeader}>
-        <Text style={styles.pageTitle}>Profile</Text>
-        {isLoggedIn ? (
-          <TouchableOpacity onPress={() => setIsLoggedIn(false)}>
-            <Text style={styles.signOutText}>Sign Out</Text>
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regCode, setRegCode] = useState('');
+  const [regLoading, setRegLoading] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<'my' | 'try' | 'liked'>('my');
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [nickname, setNickname] = useState('Pelin');
+  const [bio, setBio] = useState('No Content yet');
+
+  const handleLogin = () => {
+    setLoading(true);
+    setTimeout(() => {
+      if (email === 'test@demo.com' && password === '123456') {
+        setIsLoggedIn(true);
+      } else {
+        Alert.alert('Login failed', 'Invalid credentials');
+      }
+      setLoading(false);
+    }, 1000);
+  };
+
+  const handleRegister = () => {
+    if (!regName || !regEmail || !regPassword || !regCode) {
+      return Alert.alert('Please fill all fields');
+    }
+    setRegLoading(true);
+    setTimeout(() => {
+      setIsLoggedIn(true);
+      setShowRegister(false);
+      setRegLoading(false);
+    }, 1000);
+  };
+const [codeSending, setCodeSending] = useState(false);
+
+const handleSendCode = async () => {
+  if (!regEmail.includes('@')) {
+    Alert.alert('Invalid email');
+    return;
+  }
+
+  try {
+    setCodeSending(true);
+    // TODO: 替换为你真实后端接口
+    await fetch('https://your-api/send-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: regEmail })
+    });
+
+    Alert.alert('Verification code sent');
+  } catch (err) {
+    Alert.alert('Failed to send code');
+  } finally {
+    setCodeSending(false);
+  }
+};
+
+  if (!isLoggedIn) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.authCard}>
+          <Text style={styles.authTitle}>Sign In</Text>
+          <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#666" value={email} onChangeText={setEmail} />
+          <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#666" secureTextEntry value={password} onChangeText={setPassword} />
+          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+            <Text style={styles.buttonText}>{loading ? 'Loading...' : 'Sign In'}</Text>
           </TouchableOpacity>
-        ) : (
-          <Text style={styles.pageSubtitle}>Sign in to access your account</Text>
-        )}
-      </View>
-
-      <ScrollView style={styles.content}>
-        <View style={styles.developerNote}>
-          <Text style={styles.noteTitle}>Developer A - User Module</Text>
-          <Text style={styles.noteText}>
-            Features: Registration, Login, Profile info, Edit profile, 
-            Personal posts, Liked posts, Saved businesses
+          <Text style={styles.authSwitchText}>
+            Don’t have an account?{' '}
+            <Text style={styles.authLink} onPress={() => setShowRegister(true)}>Sign up</Text>
           </Text>
         </View>
 
-        {!isLoggedIn ? (
-          <View style={styles.authCard}>
-            <Text style={styles.authTitle}>Sign In</Text>
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Email</Text>
-              <TextInput
-                style={styles.formInput}
-                placeholder="Enter your email"
-                placeholderTextColor="#666666"
-                keyboardType="email-address"
-              />
-            </View>
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Password</Text>
-              <TextInput
-                style={styles.formInput}
-                placeholder="Enter your password"
-                placeholderTextColor="#666666"
-                secureTextEntry
-              />
-            </View>
-            <TouchableOpacity
-              style={styles.signInBtn}
-              onPress={() => setIsLoggedIn(true)}
-            >
-              <Text style={styles.signInBtnText}>Sign In</Text>
-            </TouchableOpacity>
-            <View style={styles.authSwitch}>
-              <Text style={styles.authSwitchText}>
-                Don't have an account?{' '}
-                <Text style={styles.authLink}>Sign up</Text>
-              </Text>
-            </View>
-          </View>
-        ) : (
-          <>
-            {/* Profile Info */}
-            <View style={styles.profileCard}>
-              <View style={styles.profileHeader}>
-                <View style={styles.profileAvatar}>
-                  <Text style={styles.profileAvatarText}>👤</Text>
-                </View>
-                <View style={styles.profileInfo}>
-                  <Text style={styles.profileName}>John Doe</Text>
-                  <Text style={styles.profileEmail}>john.doe@example.com</Text>
-                </View>
-              </View>
-              <TouchableOpacity style={styles.editProfileBtn}>
-                <Text style={styles.editProfileBtnText}>Edit Profile</Text>
-              </TouchableOpacity>
-            </View>
+        {/* 注册弹窗 */}
+        <Modal visible={showRegister} transparent animationType="slide">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalBox}>
+                <Text style={styles.authTitle}>Register</Text>
 
-            {/* Activity Menu */}
-            <View style={styles.activityCard}>
-              <Text style={styles.activityTitle}>My Activity</Text>
-              <TouchableOpacity style={styles.activityItem}>
-                <Text style={styles.activityItemText}>📝 My Posts</Text>
-                <Text style={styles.activityArrow}>→</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.activityItem}>
-                <Text style={styles.activityItemText}>❤️ Liked Posts</Text>
-                <Text style={styles.activityArrow}>→</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.activityItem}>
-                <Text style={styles.activityItemText}>🔖 Saved Businesses</Text>
-                <Text style={styles.activityArrow}>→</Text>
-              </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Username"
+                  placeholderTextColor="#888"
+                  value={regName}
+                  onChangeText={setRegName}
+                />
+
+                {/* 邮箱输入框 + 发送验证码按钮 */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <TextInput
+                    style={[styles.input, { flex: 1 }]}
+                    placeholder="Email"
+                    placeholderTextColor="#888"
+                    keyboardType="email-address"
+                    value={regEmail}
+                    onChangeText={setRegEmail}
+                  />
+                  <TouchableOpacity
+                    onPress={handleSendCode}
+                    disabled={codeSending || !regEmail.includes('@')}
+                    style={{
+                      backgroundColor: codeSending ? '#888' : '#00BFA6',
+                      paddingVertical: 10,
+                      paddingHorizontal: 12,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                      {codeSending ? 'Sending...' : 'Send'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Verification Code"
+                  placeholderTextColor="#888"
+                  value={regCode}
+                  onChangeText={setRegCode}
+                  keyboardType="numeric"
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  placeholderTextColor="#888"
+                  secureTextEntry
+                  value={regPassword}
+                  onChangeText={setRegPassword}
+                />
+
+                <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={regLoading}>
+                  <Text style={styles.buttonText}>
+                    {regLoading ? 'Registering...' : 'Register'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => setShowRegister(false)}>
+                  <Text style={styles.authLink}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </>
-        )}
+          </Modal>
+
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerRow}>
+        <TouchableOpacity onPress={() => setShowAvatarModal(true)}>
+          <Image source={{ uri: 'https://via.placeholder.com/80' }} style={styles.avatar} />
+        </TouchableOpacity>
+        <View style={styles.userInfo}>
+          <Text style={styles.username}>{nickname}</Text>
+          <Text style={styles.email}>{email}</Text>
+          <Text style={styles.bio}>{bio}</Text>
+          <TouchableOpacity onPress={() => router.push('/circles')}>
+            <Text style={styles.circlesLabel}>Circles</Text>
+            <Text style={styles.circlesCount}>7</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.topButtons}>
+          <TouchableOpacity onPress={() => router.push('/settings')}>
+            <Text style={styles.settingsIcon}>⚙️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.editButton} onPress={() => setShowEditModal(true)}>
+            <Text style={styles.editButtonText}>Edit Profile</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.tabContainer}>
+        {['my', 'try', 'liked'].map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            onPress={() => setActiveTab(tab as 'my' | 'try' | 'liked')}
+            style={styles.tab}
+          >
+            <Text style={styles.tabText}>
+              {tab === 'my' ? 'Myposts' : tab === 'try' ? 'WantToTry' : 'Liked'}
+            </Text>
+            {activeTab === tab && <View style={styles.tabIndicator} />}
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <ScrollView style={styles.postArea}>
+        <View style={styles.postGrid}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <View key={i} style={styles.postCard}>
+              <View style={styles.postImage} />
+              <Text style={styles.postTitle}>Post Title</Text>
+            </View>
+          ))}
+        </View>
       </ScrollView>
+
+      {/* Edit Modal */}
+      <Modal visible={showEditModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <TouchableOpacity onPress={() => setShowAvatarModal(true)}>
+              <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.avatarLarge} />
+            </TouchableOpacity>
+            <TextInput style={styles.input} placeholder="Nickname" placeholderTextColor="#888" value={nickname} onChangeText={setNickname} />
+            <TextInput style={styles.input} placeholder="Bio" placeholderTextColor="#888" value={bio} onChangeText={setBio} />
+            <TouchableOpacity style={styles.button} onPress={() => setShowEditModal(false)}>
+              <Text style={styles.buttonText}>Save</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowEditModal(false)}>
+              <Text style={styles.authLink}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Avatar Modal */}
+      <Modal visible={showAvatarModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Image source={{ uri: 'https://via.placeholder.com/200' }} style={styles.avatarLarge} />
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Change Avatar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowAvatarModal(false)}>
+              <Text style={styles.authLink}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  pageHeader: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333333',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  pageTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  pageSubtitle: {
-    color: '#888888',
-    fontSize: 14,
-  },
-  signOutText: {
-    color: '#ffffff',
-    fontSize: 14,
-    textDecorationLine: 'underline',
-  },
-  content: {
-    padding: 20,
-  },
-  developerNote: {
-    backgroundColor: '#111111',
-    borderWidth: 1,
-    borderColor: '#333333',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  noteTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  noteText: {
-    color: '#888888',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  authCard: {
-    backgroundColor: '#111111',
-    borderRadius: 8,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#333333',
-  },
-  authTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  formGroup: {
-    marginBottom: 16,
-  },
-  formLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#ffffff',
-    marginBottom: 6,
-  },
-  formInput: {
-    backgroundColor: '#222222',
-    borderWidth: 1,
-    borderColor: '#333333',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    color: '#ffffff',
-    fontSize: 14,
-  },
-  signInBtn: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  signInBtnText: {
-    color: '#000000',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  authSwitch: {
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  authSwitchText: {
-    fontSize: 14,
-    color: '#888888',
-  },
-  authLink: {
-    color: '#ffffff',
-    textDecorationLine: 'underline',
-  },
-  profileCard: {
-    backgroundColor: '#111111',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#333333',
-  },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  profileAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#222222',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  profileAvatarText: {
-    fontSize: 24,
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: '#888888',
-    marginTop: 2,
-  },
-  editProfileBtn: {
-    backgroundColor: '#222222',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  editProfileBtnText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  activityCard: {
-    backgroundColor: '#111111',
-    borderRadius: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#333333',
-  },
-  activityTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 12,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333333',
-  },
-  activityItemText: {
-    fontSize: 14,
-    color: '#ffffff',
-  },
-  activityArrow: {
-    fontSize: 14,
-    color: '#888888',
-  },
+  container: { flex: 1, backgroundColor: '#000' },
+  authCard: { backgroundColor: '#111', borderRadius: 10, padding: 20, margin: 16 },
+  authTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff', marginBottom: 12, textAlign: 'center' },
+  input: { backgroundColor: '#222', color: '#fff', padding: 10, borderRadius: 8, marginBottom: 12 },
+  button: { backgroundColor: '#fff', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 10 },
+  buttonText: { color: '#000', fontWeight: 'bold' },
+  authLink: { color: '#00BFA6', fontWeight: 'bold', textAlign: 'center', marginTop: 12 },
+  authSwitchText: { color: '#ccc', textAlign: 'center', marginTop: 10 },
+
+  headerRow: { flexDirection: 'row', padding: 16 },
+  avatar: { width: 70, height: 70, borderRadius: 35, marginRight: 16 },
+  avatarLarge: { width: 100, height: 100, borderRadius: 50, marginBottom: 16 },
+  userInfo: { justifyContent: 'center' },
+  username: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  email: { color: '#aaa', fontSize: 14 },
+  circlesLabel: { color: '#fff', marginTop: 6 },
+  circlesCount: { color: '#888' },
+  bio: {
+  color: '#bbb',
+  fontSize: 13,
+  marginTop: 4,
+},
+
+
+  topButtons: { marginLeft: 'auto', justifyContent: 'space-between', alignItems: 'flex-end' },
+  settingsIcon: { fontSize: 22, color: '#fff', marginBottom: 8 },
+  editButton: { borderColor: '#fff', borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4 },
+  editButtonText: { color: '#fff', fontSize: 12 },
+
+  tabContainer: { flexDirection: 'row', backgroundColor: '#6E6E6E', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  tab: { flex: 1, paddingVertical: 10, alignItems: 'center' },
+  tabText: { color: '#fff' },
+  tabIndicator: { height: 2, backgroundColor: '#00BFA6', width: 40, marginTop: 4, borderRadius: 1 },
+
+  postArea: { flex: 1, backgroundColor: '#000', padding: 16 },
+  postGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  postCard: { width: '48%', marginBottom: 16, backgroundColor: '#222', borderRadius: 10 },
+  postImage: { height: 120, backgroundColor: '#444', borderTopLeftRadius: 10, borderTopRightRadius: 10 },
+  postTitle: { color: '#fff', textAlign: 'center', padding: 8 },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center' },
+  modalBox: { backgroundColor: '#111', padding: 20, borderRadius: 12, width: '80%', alignItems: 'center' },
 });
 
 export default Profile;
+
+
