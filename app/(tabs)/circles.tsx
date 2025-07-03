@@ -1,10 +1,8 @@
-// app/(tabs)/circles.tsx
-
 import AddFriendModal from '@/components/circles/AddFriendModal';
 import CircleGroupCard from '@/components/circles/CircleGroupCard';
 import CircleNotificationsModal from '@/components/circles/CircleNotificationsModal';
 import CreateCircleModal from '@/components/circles/CreateCircleModal';
-import { AntDesign } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -68,6 +66,30 @@ const Circles = () => {
         { name: 'Emily Tan', role: 'Navigator', level: 6, avatar: '🌏' },
       ],
     },
+    {
+      id: '3',
+      groupName: 'Pizza Lovers',
+      owner: 'Alex Johnson',
+      currentUserName: 'Alex Johnson',
+      members: [
+        { name: 'Alex Johnson', role: 'The Legend', level: 15, avatar: '🧔🏻' },
+        { name: 'Rowan Kim', role: 'The Legend', level: 14, avatar: '👩🏻' },
+        { name: 'Jordan Lee', role: 'The Legend', level: 12, avatar: '👨🏼' },
+        { name: 'Jamie Smith', role: 'The Oracle', level: 8, avatar: '👩🏽' },
+      ],
+    },
+    {
+      id: '4',
+      groupName: 'Family',
+      owner: 'Alex Johnson',
+      currentUserName: 'Alex Johnson',
+      members: [
+        { name: 'Alex Johnson', role: 'The Legend', level: 15, avatar: '🧔🏻' },
+        { name: 'Rowan Kim', role: 'The Legend', level: 14, avatar: '👩🏻' },
+        { name: 'Jordan Lee', role: 'The Legend', level: 12, avatar: '👨🏼' },
+        { name: 'Jamie Smith', role: 'The Oracle', level: 8, avatar: '👩🏽' },
+      ],
+    },
   ];
 
   const dummyNotifications = [
@@ -94,11 +116,11 @@ const Circles = () => {
           <Text style={styles.pageSubtitle}>Social Groups & Communities</Text>
         </View>
         <View style={styles.buttonRow}>
-          <TouchableOpacity onPress={() => setNotifModalVisible(true)}>
-            <AntDesign name="bells" size={20} color="#00BFFF" />
+          <TouchableOpacity style={styles.iconBtn} onPress={() => setNotifModalVisible(true)}>
+            <Feather name="bell" size={20} color="#00BFFF" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={toggleCreateModal}>
-            <Text style={styles.createButton}>＋ Create</Text>
+          <TouchableOpacity style={styles.iconBtn} onPress={toggleCreateModal}>
+            <Feather name="plus-circle" size={20} color="#00BFFF" />
           </TouchableOpacity>
         </View>
       </View>
@@ -114,7 +136,7 @@ const Circles = () => {
           />
           {searchKeyword.length > 0 && (
             <TouchableOpacity onPress={() => setSearchKeyword('')}>
-              <Text style={styles.clearBtn}>×</Text>
+              <Feather name="x-circle" size={20} color="#888" />
             </TouchableOpacity>
           )}
         </View>
@@ -176,9 +198,11 @@ const styles = StyleSheet.create({
     gap: 10,
     flexShrink: 1,
   },
+  iconBtn: {
+    justifyContent: 'center',
+  },
   pageTitle: { fontSize: 24, fontWeight: 'bold', color: '#ffffff' },
   pageSubtitle: { color: '#888888', fontSize: 14 },
-  createButton: { color: '#00BFFF', fontSize: 16, fontWeight: 'bold' },
 
   searchRow: {
     flexDirection: 'row',
@@ -198,11 +222,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#ffffff',
     outlineWidth: 0,
-  },
-  clearBtn: {
-    color: '#888',
-    fontSize: 20,
-    marginLeft: 8,
   },
   scrollContent: {
     paddingBottom: 40,

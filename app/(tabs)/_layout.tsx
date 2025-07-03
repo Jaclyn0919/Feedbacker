@@ -1,19 +1,12 @@
-// app/(tabs)/_layout.tsx
-
+import { Feather } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Text } from 'react-native';
+import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-const MockIconSymbol = ({ name, size, color }: any) => (
-  <Text style={{ fontSize: size, color, pointerEvents: 'box-none' }}>
-    {name}
-  </Text>
-);
 
 const TabLayout = () => {
   const colorScheme = useColorScheme();
@@ -58,7 +51,7 @@ const TabLayout = () => {
         options={{
           title: 'Posts',
           tabBarIcon: ({ color }) => (
-            <MockIconSymbol size={28} name="📍" color={color} />
+            <Feather name="map-pin" size={22} color={color} />
           ),
         }}
       />
@@ -67,7 +60,7 @@ const TabLayout = () => {
         options={{
           title: 'Circles',
           tabBarIcon: ({ color }) => (
-            <MockIconSymbol size={28} name="👥" color={color} />
+            <Feather name="users" size={22} color={color} />
           ),
         }}
       />
@@ -76,7 +69,7 @@ const TabLayout = () => {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => (
-            <MockIconSymbol size={28} name="👤" color={color} />
+            <Feather name="user" size={22} color={color} />
           ),
         }}
       />

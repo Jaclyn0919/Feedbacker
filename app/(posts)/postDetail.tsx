@@ -1,4 +1,3 @@
-// PostDetailScreen.js
 import RatingStars from '@/components/posts/RatingStars';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
@@ -16,7 +15,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
-// 提取颜色常量
+// Color palette
 const COLORS = {
   background: '#121212',
   cardBackground: '#1a1a1a',
@@ -29,18 +28,18 @@ const COLORS = {
   error: '#ff5252',
 };
 
-// 提取尺寸常量（含响应式设计）
+// Sizing
 const { width, height } = Dimensions.get('window');
 const SIZES = {
-  paddingSmall: width * 0.025,       
-  paddingMedium: width * 0.05,       
-  paddingLarge: width * 0.075,     
+  paddingSmall: width * 0.025,
+  paddingMedium: width * 0.05,
+  paddingLarge: width * 0.075,
   borderRadius: 12,
   borderWidth: 1,
-  imageHeight: height * 0.25,     
+  imageHeight: height * 0.25,
 };
 
-// 模拟API调用的函数 - 获取单个帖子详情
+// Simulated API to fetch post detail
 const fetchPostDetail = async (postId) => {
   try {
     return {
@@ -49,44 +48,44 @@ const fetchPostDetail = async (postId) => {
       circleId: 4,
       merchantId: 1,
       name: 'Delicious lunch experience',
-      content: 'The steak at this restaurant was absolutely amazing! The meat was tender and juicy, and the service was excellent. Highly recommended!',
+      content:
+        'The steak at this restaurant was absolutely amazing! The meat was tender and juicy, and the service was excellent. Highly recommended!',
       score: 4.5,
       createdAt: '2025-06-15',
       updatedAt: '2025-06-15',
       type: 'food',
       priceLevel: '2',
-      images: ['https://picsum.photos/400/300?random=1', 'https://picsum.photos/400/300?random=2']
+      images: [
+        'https://picsum.photos/400/300?random=1',
+        'https://picsum.photos/400/300?random=2',
+      ],
     };
   } catch (error) {
-    console.error('获取帖子详情失败:', error);
+    console.error('Failed to fetch post detail:', error);
     return null;
   }
 };
 
-// 评论项组件
+// Single comment item
 const CommentItem = ({ comment, onEdit, onDelete, onSave, onCancel }) => {
   const [isEditing, setIsEditing] = useState(comment.isEditing);
   const [editedText, setEditedText] = useState(comment.editedText || comment.text);
 
-  // 开始编辑评论
   const handleStartEdit = () => {
     setIsEditing(true);
     onEdit(comment.id);
   };
 
-  // 取消编辑
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditedText(comment.text);
     onCancel(comment.id);
   };
 
-  // 更新编辑中的评论内容
   const handleEditCommentText = (text) => {
     setEditedText(text);
   };
 
-  // 保存编辑
   const handleSaveEdit = () => {
     setIsEditing(false);
     onSave(comment.id, editedText);
@@ -106,16 +105,15 @@ const CommentItem = ({ comment, onEdit, onDelete, onSave, onCancel }) => {
             onChangeText={handleEditCommentText}
           />
           <View style={styles.commentActions}>
-            <Button title="取消" onPress={handleCancelEdit} />
-            <Button title="保存" onPress={handleSaveEdit} />
+            <Button title="Cancel" onPress={handleCancelEdit} />
+            <Button title="Save" onPress={handleSaveEdit} />
           </View>
         </View>
       ) : (
         <View>
           <Text style={styles.commentText}>{comment.text}</Text>
           <View style={styles.commentActions}>
-            {/* <Button title="编辑" onPress={handleStartEdit} /> */}
-            <Button title="删除" onPress={() => onDelete(comment.id)} />
+            <Button title="Delete" onPress={() => onDelete(comment.id)} />
           </View>
         </View>
       )}
@@ -127,30 +125,17 @@ const PostDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const postId = route.params?.postId || 1;
+
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
+
   const [post, setPost] = useState(null);
-  const [comments, setComments] = useState([
-    {
-      id: postId + '_comment1',
-      author: 'user1',
-      text: 'Totally agree—the steak at this place is truly excellent!',
-      date: '2025-06-16 10:30',
-      isEditing: false,
-      editedText: null,
-    },
-    {
-      id: postId + '_comment2',
-      author: 'user2',
-      text: 'I’ve been there too—the service was indeed very attentive, and the ambiance was great as well.',
-      date: '2025-06-17 14:15',
-      isEditing: false,
-      editedText: null,
-    }
-  ]);
+  const [comments, setComments] = useState([]);
   const [newCommentText, setNewCommentText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  console.log('postDetail route is',route)
-  // 日期格式化函数
+
   const formatDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -160,29 +145,24 @@ const PostDetailScreen = () => {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
-  // 添加评论
   const handleAddComment = () => {
     if (!newCommentText.trim()) return;
-    
     const newComment = {
       id: Date.now().toString(),
-      author: '你', 
+      author: 'You',
       text: newCommentText,
       date: formatDate(new Date()),
       isEditing: false,
       editedText: null,
     };
-    
     setComments([newComment, ...comments]);
     setNewCommentText('');
   };
 
-  // 删除评论
   const handleDeleteComment = (commentId) => {
     setComments(comments.filter((comment) => comment.id !== commentId));
   };
 
-  // 开始编辑评论
   const handleStartEditComment = (commentId) => {
     setComments(
       comments.map((comment) =>
@@ -191,7 +171,6 @@ const PostDetailScreen = () => {
     );
   };
 
-  // 取消编辑评论
   const handleCancelEditComment = (commentId) => {
     setComments(
       comments.map((comment) =>
@@ -202,57 +181,46 @@ const PostDetailScreen = () => {
     );
   };
 
-  // 保存编辑的评论
   const handleSaveEditComment = (commentId, text) => {
     setComments(
-      comments.map((comment) => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            text: text,
-            isEditing: false,
-            editedText: null,
-          };
-        }
-        return comment;
-      })
+      comments.map((comment) =>
+        comment.id === commentId
+          ? { ...comment, text, isEditing: false, editedText: null }
+          : comment
+      )
     );
   };
 
   useEffect(() => {
     if (!postId) {
-      setError('帖子ID不存在');
+      setError('Post ID not found.');
       setIsLoading(false);
       return;
     }
-    
+
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
-        // 获取帖子详情
         const postData = await fetchPostDetail(postId);
         if (postData) {
           setPost(postData);
         } else {
-          setError('获取帖子详情失败');
+          setError('Failed to fetch post details.');
         }
-        
       } catch (err) {
-        setError('获取数据失败，请稍后再试');
+        setError('Something went wrong. Please try again later.');
         console.error(err);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [postId]);
 
-  // 渲染帖子详情内容
   const renderPostContent = () => {
     if (!post) return null;
-    
+
     return (
       <View style={styles.postContainer}>
         <View style={styles.postHeader}>
@@ -262,29 +230,30 @@ const PostDetailScreen = () => {
             <Text style={styles.ratingNumber}>{post.score}</Text>
           </View>
         </View>
-        
+
         <View style={styles.postImagesContainer}>
           {post.images.map((image, index) => (
-            <Image 
-              key={index} 
-              source={{ uri: image }} 
-              style={styles.postImage} 
+            <Image
+              key={index}
+              source={{ uri: image }}
+              style={styles.postImage}
               resizeMode="cover"
             />
           ))}
         </View>
-        
+
         <Text style={styles.postContent}>{post.content}</Text>
-        
+
         <View style={styles.postMeta}>
           <Text style={styles.postDate}>{post.createdAt}</Text>
           <View style={styles.postTags}>
             <Text style={styles.postTag}>{post.type}</Text>
-            <Text style={styles.postTag}>Prices: {post.priceLevel === '1' ? '$' : post.priceLevel === '2' ? '$$' : '$$$'}</Text>
+            <Text style={styles.postTag}>
+              Prices: {post.priceLevel === '1' ? '$' : post.priceLevel === '2' ? '$$' : '$$$'}
+            </Text>
           </View>
         </View>
-        
-        {/* 评论输入区域 */}
+
         <View style={styles.commentInputContainer}>
           <TextInput
             style={styles.commentInput}
@@ -298,11 +267,10 @@ const PostDetailScreen = () => {
             disabled={!newCommentText.trim()}
           />
         </View>
-        
-        {/* 评论列表 */}
+
         <View style={styles.commentsContainer}>
           {comments.length === 0 ? (
-            <Text style={styles.noCommentsText}>暂无评论</Text>
+            <Text style={styles.noCommentsText}>No comments yet</Text>
           ) : (
             comments.map((comment) => (
               <CommentItem
@@ -322,47 +290,46 @@ const PostDetailScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {/* 顶部返回按钮 */}
-        <TouchableOpacity
-          style={{ margin: SIZES.paddingMedium }}
-          onPress={() => navigation.navigate('(posts)/merchantDetail', {
-            item:route?.params?.item
-          })}
-        >
-          <Text style={styles.backButtonText}>← Back</Text>
+      {/* Custom header matching other screens */}
+      <View style={styles.pageHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        
-        {/* 加载状态 */}
+        <View style={styles.titleGroup}>
+          <Text style={styles.pageTitle}>Feedbacker</Text>
+          <Text style={styles.pageSubtitle}>Post Details</Text>
+        </View>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView>
         {isLoading && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>加载帖子详情...</Text>
+            <Text style={styles.loadingText}>Loading post details...</Text>
           </View>
         )}
-        
-        {/* 错误状态 */}
+
         {error && !isLoading && (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.retryButton}
               onPress={() => {
                 setError('');
                 setIsLoading(true);
-                fetchPostDetail(postId).then(data => setPost(data)).finally(() => setIsLoading(false));
+                fetchPostDetail(postId)
+                  .then((data) => setPost(data))
+                  .finally(() => setIsLoading(false));
               }}
             >
-              <Text style={styles.retryButtonText}>重试</Text>
+              <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           </View>
         )}
-        
-        {/* 正常内容 */}
+
         {!isLoading && !error && post && (
-          <View style={styles.contentContainer}>
-            {renderPostContent()}
-          </View>
+          <View style={styles.contentContainer}>{renderPostContent()}</View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -374,7 +341,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  pageHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
+  titleGroup: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  pageTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
+  },
+  pageSubtitle: {
+    color: COLORS.textTertiary,
+    fontSize: 13,
+    marginTop: 2,
+  },
   contentContainer: {
+    paddingTop: 16,
     paddingHorizontal: SIZES.paddingMedium,
     paddingBottom: SIZES.paddingLarge,
   },
@@ -402,7 +395,7 @@ const styles = StyleSheet.create({
   postTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: COLORS.textPrimary,
     flex: 1,
   },
   rating: {
@@ -410,7 +403,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ratingNumber: {
-    color: '#ffffff',
+    color: COLORS.textPrimary,
     fontSize: 12,
     marginLeft: 4,
     fontWeight: '500',
@@ -455,7 +448,6 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: 12,
   },
-  // 评论相关样式
   commentInputContainer: {
     padding: SIZES.paddingMedium,
     flexDirection: 'row',
@@ -514,7 +506,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     gap: 8,
   },
-  // 加载和错误状态样式
   loadingContainer: {
     flex: 1,
     alignItems: 'center',

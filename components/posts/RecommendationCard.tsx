@@ -1,7 +1,7 @@
-// RecommendationCard.tsx
 import AddRecommendationModal from '@/components/posts/AddRecommendationModal';
 import RatingStars from '@/components/posts/RatingStars';
 import { post } from '@/utils/http';
+import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
@@ -85,7 +85,11 @@ const RecommendationCard = ({ recommendation }: any) => {
             ))}
           </View>
 
-          <Text style={styles.timeInfo}>🕒 {recommendation.createdAt}</Text>
+          {/* 优化时间图标 */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+            <Feather name="clock" size={12} color="#666" style={{ marginRight: 4 }} />
+            <Text style={styles.timeInfo}>{recommendation.createdAt}</Text>
+          </View>
 
           {recommendation.recommenders?.length > 0 && (
             <View style={styles.recommendersContainer}>
@@ -112,21 +116,34 @@ const RecommendationCard = ({ recommendation }: any) => {
           <View style={styles.actionButtons}>
             {route.name === 'index' && (
               <TouchableOpacity style={styles.actionButton} onPress={() => goMechantDetail(recommendation)}>
-                <Text style={styles.actionButtonText}>📖 View Posts</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Feather name="book-open" size={14} color="#fff" />
+                  <Text style={styles.actionButtonText}>View Posts</Text>
+                </View>
               </TouchableOpacity>
             )}
             <TouchableOpacity style={styles.actionButton} onPress={() => goMechantDetail(recommendation)}>
-              <Text style={styles.actionButtonText}>🌐 View Website</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Feather name="external-link" size={14} color="#fff" />
+                <Text style={styles.actionButtonText}>View Website</Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
       </View>
+
       {isOpenRec && (
-        <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={() => setIsOpenRec(false)} type="edit" item={recommendation} />
+        <AddRecommendationModal
+          isOpenRec={isOpenRec}
+          onCloseRec={() => setIsOpenRec(false)}
+          type="edit"
+          item={recommendation}
+        />
       )}
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   cardWrapper: {

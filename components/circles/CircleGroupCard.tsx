@@ -1,4 +1,4 @@
-import { AntDesign } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -42,6 +42,7 @@ const CircleGroupCard: React.FC<Props> = ({
 
   const toggleModal = () => setEditModalVisible(!isEditModalVisible);
   const toggleExpand = () => setExpanded(!isExpanded);
+  const isAdmin = owner === currentUserName;
 
   const handleSave = () => {
     console.log('Saving group:', editedName, editedOwner);
@@ -52,8 +53,6 @@ const CircleGroupCard: React.FC<Props> = ({
     console.log('Deleting member:', name);
   };
 
-  const isAdmin = owner === currentUserName;
-
   const router = useRouter();
 
   return (
@@ -61,18 +60,17 @@ const CircleGroupCard: React.FC<Props> = ({
       <View style={styles.headerRow}>
         <View>
           <Text style={styles.groupName}>{groupName}</Text>
-          <Text style={styles.ownerText}>👑 {owner}</Text>
+          <View style={styles.ownerRow}>
+            <Feather name="shield" size={14} color="#aaa" style={{ marginRight: 4 }} />
+            <Text style={styles.ownerText}>{owner}</Text>
+          </View>
         </View>
         <View style={styles.actionRow}>
-          <TouchableOpacity onPress={toggleModal}>
-            <Text style={styles.editBtn}>✏️ Edit</Text>
+          <TouchableOpacity onPress={toggleModal} style={styles.iconBtn}>
+            <Feather name="edit-2" size={16} color="#00BFFF" />
           </TouchableOpacity>
           <TouchableOpacity onPress={toggleExpand} style={styles.iconBtn}>
-            <AntDesign
-              name={isExpanded ? 'up' : 'down'}
-              size={18}
-              color="#aaa"
-            />
+            <Feather name={isExpanded ? 'chevron-up' : 'chevron-down'} size={18} color="#aaa" />
           </TouchableOpacity>
         </View>
       </View>
@@ -89,7 +87,7 @@ const CircleGroupCard: React.FC<Props> = ({
             />
             {memberSearchKeyword.length > 0 && (
               <TouchableOpacity onPress={() => setMemberSearchKeyword('')}>
-                <Text style={styles.clearBtn}>×</Text>
+                <Feather name="x-circle" size={18} color="#888" />
               </TouchableOpacity>
             )}
           </View>
@@ -105,9 +103,9 @@ const CircleGroupCard: React.FC<Props> = ({
                     <Text style={styles.avatar}>{m.avatar}</Text>
                     <View style={styles.memberInfo}>
                       <TouchableOpacity
-                        onPress={() => {//TODO: Navigate to profile page
-                          }
-                        }
+                        onPress={() => {
+                          // TODO: Navigate to profile
+                        }}
                       >
                         <Text style={styles.memberName}>{m.name}</Text>
                       </TouchableOpacity>
@@ -117,10 +115,10 @@ const CircleGroupCard: React.FC<Props> = ({
                     </View>
                     <View style={styles.actions}>
                       <TouchableOpacity style={styles.iconBtn}>
-                        <Text>💬</Text>
+                        <Feather name="message-square" size={16} color="#ccc" />
                       </TouchableOpacity>
                       <TouchableOpacity style={styles.iconBtn}>
-                        <Text>📤</Text>
+                        <Feather name="share-2" size={16} color="#ccc" />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -213,13 +211,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  ownerText: {
-    color: '#aaa',
-    fontSize: 13,
+  ownerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 2,
   },
-  editBtn: {
-    color: '#00BFFF',
+  ownerText: {
+    color: '#aaa',
     fontSize: 13,
   },
   iconBtn: {
@@ -245,11 +243,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
     outlineWidth: 0,
-  },
-  clearBtn: {
-    color: '#888',
-    fontSize: 20,
-    marginLeft: 8,
   },
   memberScrollArea: {
     maxHeight: 150,
