@@ -1,5 +1,5 @@
 // PostDetailScreen.js
-import RatingStars from '@/components/Posts/components/RatingStars';
+import RatingStars from '@/components/posts/RatingStars';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -326,7 +326,7 @@ const PostDetailScreen = () => {
         {/* 顶部返回按钮 */}
         <TouchableOpacity
           style={{ margin: SIZES.paddingMedium }}
-          onPress={() => navigation.navigate('merchantDetail', {
+          onPress={() => navigation.navigate('(posts)/merchantDetail', {
             item:route?.params?.item
           })}
         >

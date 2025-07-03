@@ -1,6 +1,6 @@
 // Posts.js
-import AddRecommendationModal from '@/components/Posts/AddRecommendationModal';
-import RecommendationCard from '@/components/Posts/RecommendationCard';
+import AddRecommendationModal from '@/components/posts/AddRecommendationModal';
+import RecommendationCard from '@/components/posts/RecommendationCard';
 import { post } from '@/utils/http';
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';

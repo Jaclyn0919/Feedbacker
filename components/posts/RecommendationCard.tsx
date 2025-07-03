@@ -1,4 +1,6 @@
 // import { Picker } from '@react-native-picker/picker';
+import AddRecommendationModal from '@/components/posts/AddRecommendationModal';
+import RatingStars from '@/components/posts/RatingStars';
 import { post } from '@/utils/http';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
@@ -9,8 +11,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import AddRecommendationModal from './AddRecommendationModal';
-import RatingStars from './components/RatingStars';
 
 // 推荐卡片组件
 const RecommendationCard = ({ 
@@ -50,7 +50,7 @@ const RecommendationCard = ({
   }
 
  const goMechantDetail = (item: any) => {
-  navigation.navigate('merchantDetail', {
+  navigation.navigate('(posts)/merchantDetail', {
     item
   });
 };

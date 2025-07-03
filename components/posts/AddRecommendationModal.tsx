@@ -18,7 +18,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import TagList from './components/TagComponent';
+import TagList from './TagComponent';
 
 // 明确表单数据类型定义
 type formDataType = {
