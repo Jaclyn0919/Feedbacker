@@ -1,4 +1,4 @@
-// import { Picker } from '@react-native-picker/picker';
+// RecommendationCard.tsx
 import AddRecommendationModal from '@/components/posts/AddRecommendationModal';
 import RatingStars from '@/components/posts/RatingStars';
 import { post } from '@/utils/http';
@@ -12,187 +12,133 @@ import {
   View
 } from 'react-native';
 
-// 推荐卡片组件
-const RecommendationCard = ({ 
-  recommendation,
-}: any) => {
+const RecommendationCard = ({ recommendation }: any) => {
   const [isLiked, setIsLiked] = useState(recommendation?.isLiked || false);
-  const navigation = useNavigation();
   const [isOpenRec, setIsOpenRec] = useState(false);
-
+  const navigation = useNavigation();
   const route = useRoute();
 
-  // 渲染价格范围
   const renderPriceRange = (priceRange: number) => {
-    const dollarSigns = [];
-    for (let i = 0; i < priceRange; i++) {
-      dollarSigns.push(
-        <Text key={`dollar-${i}`} style={styles.priceSign}>$</Text>
-      );
-    }
-    return dollarSigns;
+    return Array(priceRange)
+      .fill('$')
+      .map((dollar, i) => (
+        <Text key={i} style={styles.priceSign}>{dollar}</Text>
+      ));
   };
 
-  const onCloseRec = () => {
-    setIsOpenRec(false)
-  }
-
-  const onLikeMerchant = (merchantId:number|string) => {
-    const data = {
-      merchantId
-    }
-    const flag = true
-    const api = flag ? '/api/merchants/favorite' : '/api/merchants/unfavorite'
-    post(api,data).then(res => {
-      // setCircleList(res.data);
-      console.log('res is',res)
+  const onLikeMerchant = (merchantId: number | string) => {
+    const api = isLiked ? '/api/merchants/unfavorite' : '/api/merchants/favorite';
+    post(api, { merchantId }).then(res => {
+      console.log('Like toggled:', res);
     });
-  }
+  };
 
- const goMechantDetail = (item: any) => {
-  navigation.navigate('(posts)/merchantDetail', {
-    item
-  });
-};
+  const goMechantDetail = (item: any) => {
+    navigation.navigate('(posts)/merchantDetail', { item });
+  };
 
   return (
-    <View style={styles.card}>
-      {/* 卡片图片区域 */}
-      <View style={styles.cardImageContainer}>
-        {recommendation?.images?.length ? (
-          <Image 
-            source={{ uri: recommendation.images[0] }} 
-            style={styles.cardImage} 
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text style={styles.imagePlaceholderText}>📷 {recommendation.name}</Text>
-          </View>
-        )}
-        
-        {/* 卡片操作按钮 */}
-        <View style={styles.cardActions}>
-          <TouchableOpacity
-            style={[styles.actionBtn, isLiked && styles.actionBtnLiked]}
-            onPress={() => {
-              setIsLiked(!isLiked);
-              onLikeMerchant(recommendation.merchantId)
-            }}
-          >
-            <Text style={[styles.actionBtnText, isLiked && styles.actionBtnTextLiked]}>
-              {isLiked ? '❤️' : '🤍'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        
-        {/* 分类标签 */}
-        <View style={styles.categoryBadge}>
-          <Text style={styles.categoryBadgeText}>{recommendation.type}</Text>
-        </View>
-      </View>
-      
-      {/* 卡片内容区域 */}
-      <View style={styles.cardContent}>
-        {/* 卡片头部（标题和评分） */}
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>{recommendation.name}</Text>
-          <View style={styles.rating}>
-            <RatingStars rating={recommendation.score} />
-            <Text style={styles.ratingNumber}>{recommendation.score}</Text>
-          </View>
-        </View>
-        
-        {/* 位置和类型 */}
-        <Text style={styles.location}>{recommendation.address} • {recommendation.type}</Text>
-        
-        {/* 价格范围 */}
-        <View style={styles.priceContainer}>
-          {renderPriceRange(recommendation.priceRange || 3)}
-        </View>
-        
-        {/* 描述 */}
-        <Text style={styles.description}>{recommendation.content}</Text>
-        
-        {/* 标签 */}
-        <View style={styles.tags}>
-          {recommendation.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
+    <View style={styles.cardWrapper}>
+      <View style={styles.card}>
+        <View style={styles.cardImageContainer}>
+          {recommendation?.images?.length ? (
+            <Image source={{ uri: recommendation.images[0] }} style={styles.cardImage} resizeMode="cover" />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.imagePlaceholderText}>📷 {recommendation.name}</Text>
             </View>
-          ))}
+          )}
+          <View style={styles.cardActions}>
+            <TouchableOpacity
+              style={[styles.actionBtn, isLiked && styles.actionBtnLiked]}
+              onPress={() => {
+                setIsLiked(!isLiked);
+                onLikeMerchant(recommendation.merchantId);
+              }}
+            >
+              <Text style={styles.actionBtnText}>{isLiked ? '❤️' : '🤍'}</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryBadgeText}>{recommendation.type}</Text>
+          </View>
         </View>
-        
-        {/* 时间信息 */}
-        <Text style={styles.timeInfo}>🕒 {recommendation.createdAt}</Text>
-        
-        {/* 推荐人 */}
-        {recommendation.recommenders && recommendation.recommenders.length > 0 && (
-          <View style={styles.recommendersContainer}>
-            <Text style={styles.recommendersLabel}>Recommended by:</Text>
-            <View style={styles.recommendersList}>
-              { recommendation.recommenders.map((recommender:any, index : any) => (
-                <View key={index} style={styles.recommenderItem}>
-                  {recommender.avatarUrl ? (
-                    <Image 
-                      source={{ uri: recommender.avatarUrl }} 
-                      style={styles.recommenderAvatar} 
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View style={styles.recommenderAvatarPlaceholder}>
-                      <Text style={styles.recommenderInitials}>
-                        {recommender.name.charAt(0).toUpperCase()}
-                      </Text>
-                    </View>
-                  )}
-                  <Text style={styles.recommenderName}>{recommender.name}</Text>
-                </View>
-              ))}
+
+        <View style={styles.cardContent}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{recommendation.name}</Text>
+            <View style={styles.rating}>
+              <RatingStars rating={recommendation.score} />
+              <Text style={styles.ratingNumber}>{recommendation.score}</Text>
             </View>
           </View>
-        )}
-        
-        {/* 操作按钮 */}
-        <View style={styles.actionButtons}>
-          {route.name === 'index' && <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => goMechantDetail(recommendation)}
-          >
-            <Text style={styles.actionButtonText}>
-              <Text style={styles.actionButtonIcon}>📖</Text> View Merchant Posts
-            </Text>
-          </TouchableOpacity>}
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => {
-              goMechantDetail(recommendation)
-            }}
-          >
-            <Text style={styles.actionButtonText}>
-              <Text style={styles.actionButtonIcon}>🌐</Text> View Website
-            </Text>
-          </TouchableOpacity>
+
+          <Text style={styles.location}>{recommendation.address} • {recommendation.type}</Text>
+          <View style={styles.priceContainer}>{renderPriceRange(recommendation.priceRange || 3)}</View>
+          <Text style={styles.description}>{recommendation.content}</Text>
+
+          <View style={styles.tags}>
+            {recommendation.tags.map((tag: string, index: number) => (
+              <View key={index} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Text style={styles.timeInfo}>🕒 {recommendation.createdAt}</Text>
+
+          {recommendation.recommenders?.length > 0 && (
+            <View style={styles.recommendersContainer}>
+              <Text style={styles.recommendersLabel}>Recommended by:</Text>
+              <View style={styles.recommendersList}>
+                {recommendation.recommenders.map((r: any, i: number) => (
+                  <View key={i} style={styles.recommenderItem}>
+                    {r.avatarUrl ? (
+                      <Image source={{ uri: r.avatarUrl }} style={styles.recommenderAvatar} />
+                    ) : (
+                      <View style={styles.recommenderAvatarPlaceholder}>
+                        <Text style={styles.recommenderInitials}>
+                          {r.name.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={styles.recommenderName}>{r.name}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          <View style={styles.actionButtons}>
+            {route.name === 'index' && (
+              <TouchableOpacity style={styles.actionButton} onPress={() => goMechantDetail(recommendation)}>
+                <Text style={styles.actionButtonText}>📖 View Posts</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.actionButton} onPress={() => goMechantDetail(recommendation)}>
+              <Text style={styles.actionButtonText}>🌐 View Website</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec}  type={'edit'} item={recommendation} />}
+      {isOpenRec && (
+        <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={() => setIsOpenRec(false)} type="edit" item={recommendation} />
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  cardWrapper: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
   card: {
     backgroundColor: '#111111',
     borderRadius: 12,
-    marginBottom: 16,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#333333',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   cardImageContainer: {
     position: 'relative',
@@ -210,26 +156,21 @@ const styles = StyleSheet.create({
   },
   imagePlaceholderText: {
     color: '#888888',
-    fontSize: 16,
   },
   cardActions: {
     position: 'absolute',
     top: 12,
     right: 12,
-    flexDirection: 'row',
-    gap: 8,
-    zIndex: 10,
   },
   actionBtn: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 16,
-    padding: 8,
     width: 32,
     height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: '#aaa',
   },
   actionBtnLiked: {
     backgroundColor: '#ff3e6c',
@@ -237,26 +178,20 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 16,
-    color: '#ffffff',
-  },
-  actionBtnTextLiked: {
-    color: '#ffffff',
+    color: '#fff',
   },
   categoryBadge: {
     position: 'absolute',
     bottom: 12,
     left: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   categoryBadgeText: {
-    color: '#000000',
     fontSize: 12,
+    color: '#000',
     fontWeight: '500',
   },
   cardContent: {
@@ -265,79 +200,68 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
   },
   cardTitle: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
     flex: 1,
   },
   rating: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-
   ratingNumber: {
-    color: '#ffffff',
-    fontSize: 14,
+    color: '#fff',
     marginLeft: 4,
-    fontWeight: '500',
   },
   location: {
-    color: '#888888',
-    fontSize: 14,
-    marginBottom: 8,
+    color: '#888',
+    marginTop: 6,
   },
   priceContainer: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginVertical: 6,
   },
   priceSign: {
     color: '#ff9500',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    marginRight: 2,
   },
   description: {
-    color: '#cccccc',
-    fontSize: 14,
-    marginBottom: 12,
-    lineHeight: 20,
+    color: '#ccc',
+    marginBottom: 6,
   },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
+    gap: 6,
   },
   tag: {
-    backgroundColor: '#333333',
+    backgroundColor: '#333',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
   },
   tagText: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: 12,
-    fontWeight: '500',
   },
   timeInfo: {
+    color: '#666',
     fontSize: 12,
-    color: '#666666',
-    marginBottom: 12,
+    marginTop: 6,
   },
   recommendersContainer: {
-    marginBottom: 12,
+    marginTop: 10,
   },
   recommendersLabel: {
-    color: '#888888',
+    color: '#888',
     fontSize: 12,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   recommendersList: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 8,
   },
   recommenderItem: {
@@ -354,113 +278,38 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#333333',
+    backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 6,
   },
   recommenderInitials: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: 12,
     fontWeight: '500',
   },
   recommenderName: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: 12,
-    fontWeight: '500',
   },
   actionButtons: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 12,
+    marginTop: 8,
   },
   actionButton: {
     flex: 1,
-    backgroundColor: '#333333',
-    borderRadius: 16,
     paddingVertical: 8,
+    backgroundColor: '#333',
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
-    gap: 4,
+    borderColor: '#444',
     borderWidth: 1,
-    borderColor: '#444444',
   },
   actionButtonText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  actionButtonIcon: {
-    fontSize: 14,
-  },
-  userRatingSection: {
-    borderTopWidth: 1,
-    borderColor: '#333333',
-    paddingTop: 12,
-  },
-  userRatingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  userRatingTitle: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  userRatingStars: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  userComment: {
-    backgroundColor: '#222222',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-    color: 'white',
-    marginVertical: 10,
-    backgroundColor: '#222',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#222',
-    paddingHorizontal: 15,
-  },
-  commentForm: {
-    marginTop: 8,
-  },
-  commentInput: {
-    backgroundColor: '#222222',
-    borderRadius: 8,
-    padding: 12,
-    color: '#ffffff',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  commentFormActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  comentCommentButton: { 
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginLeft: 8,
-  },
-  commentFormButtonSave: {
-    backgroundColor: '#3cdddd',
-  },
-  commentFormButtonCancelEdit: {
-    backgroundColor: '#0f1729',
-  },
-  commentFormButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
+    color: '#fff',
+    fontSize: 13,
     fontWeight: '500',
   },
 });

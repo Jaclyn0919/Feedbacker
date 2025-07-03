@@ -313,10 +313,8 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item }: Props) =>
       onRequestClose={onCloseRec}
       hardwareAccelerated={true}
     >
-      <Pressable onPress={onCloseRec}>
-        <View style={styles.modalOverlay} />
-      </Pressable>
-      
+    <View style={styles.modalOverlay}>
+      <Pressable style={styles.overlayTouchable} onPress={onCloseRec} />
       <View style={styles.modalContainer}>
         <Pressable onPress={(e) => e.stopPropagation()}>
           <View style={styles.modalContent}>
@@ -580,27 +578,34 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item }: Props) =>
               </KeyboardAvoidingView>
             </ScrollView>
           </View>
-        </Pressable>
+          </Pressable>
       </View>
-    </Modal>
+    </View>
+  </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   modalOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 2,
-  },
-  modalContainer: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 3,
+    position: 'relative',
+  },
+  overlayTouchable: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
+  modalContainer: {
+    zIndex: 2,
+    width: '100%',
+    alignItems: 'center',
+    paddingHorizontal: 20,
   },
   modalContent: {
     position: 'relative',
-    width: '90%',
+    width: '100%',
     maxWidth: 400,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
