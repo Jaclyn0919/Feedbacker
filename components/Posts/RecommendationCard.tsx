@@ -15,7 +15,6 @@ import RatingStars from './components/RatingStars';
 // 推荐卡片组件
 const RecommendationCard = ({ 
   recommendation,
-  onLike,
 }: any) => {
   const [isLiked, setIsLiked] = useState(recommendation?.isLiked || false);
   const navigation = useNavigation();

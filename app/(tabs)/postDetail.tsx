@@ -48,8 +48,8 @@ const fetchPostDetail = async (postId) => {
       authorId: 1,
       circleId: 4,
       merchantId: 1,
-      name: '美味午餐体验',
-      content: '这家餐厅的牛排简直太棒了！肉质鲜嫩多汁，服务也非常周到。强烈推荐给大家！',
+      name: 'Delicious lunch experience',
+      content: 'The steak at this restaurant was absolutely amazing! The meat was tender and juicy, and the service was excellent. Highly recommended!',
       score: 4.5,
       createdAt: '2025-06-15',
       updatedAt: '2025-06-15',
@@ -131,16 +131,16 @@ const PostDetailScreen = () => {
   const [comments, setComments] = useState([
     {
       id: postId + '_comment1',
-      author: '用户1',
-      text: '非常同意，这家店的牛排确实很棒！',
+      author: 'user1',
+      text: 'Totally agree—the steak at this place is truly excellent!',
       date: '2025-06-16 10:30',
       isEditing: false,
       editedText: null,
     },
     {
       id: postId + '_comment2',
-      author: '用户2',
-      text: '我也来过，服务确实很周到，环境也不错。',
+      author: 'user2',
+      text: 'I’ve been there too—the service was indeed very attentive, and the ambiance was great as well.',
       date: '2025-06-17 14:15',
       isEditing: false,
       editedText: null,
@@ -288,12 +288,12 @@ const PostDetailScreen = () => {
         <View style={styles.commentInputContainer}>
           <TextInput
             style={styles.commentInput}
-            placeholder="添加评论..."
+            placeholder="Add a comment..."
             value={newCommentText}
             onChangeText={(text) => setNewCommentText(text)}
           />
           <Button
-            title="发布"
+            title="Publish"
             onPress={handleAddComment}
             disabled={!newCommentText.trim()}
           />
