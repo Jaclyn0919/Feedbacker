@@ -1,5 +1,7 @@
 // MerchantDetailScreen.js
+import AddRecommendationModal from '@/components/Posts/AddRecommendationModal';
 import RatingStars from '@/components/Posts/components/RatingStars';
+// import * as api from '@/utils/http';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
@@ -15,7 +17,7 @@ import {
   View
 } from 'react-native';
 
-const fetchMerchantPosts = async (merchantId) => {
+const fetchMerchantPosts = async (merchantId:any,circleId:any) => {
   try {
     return [
       {
@@ -23,8 +25,8 @@ const fetchMerchantPosts = async (merchantId) => {
         authorId: 1,
         circleId: 4,
         merchantId: merchantId,
-        name: '美味午餐体验',
-        content: '这家餐厅的牛排简直太棒了！肉质鲜嫩多汁，服务也非常周到。强烈推荐给大家！',
+        name: 'Delicious lunch experience',
+        content: 'The steak at this restaurant was absolutely amazing! The meat was tender and juicy, and the service was excellent. Highly recommended!',
         score: 4.5,
         createdAt: '2025-06-15',
         updatedAt: '2025-06-15',
@@ -37,8 +39,8 @@ const fetchMerchantPosts = async (merchantId) => {
         authorId: 3,
         circleId: 4,
         merchantId: merchantId,
-        name: '性价比超高的晚餐',
-        content: '第一次来这家店，没想到性价比这么高！分量很足，味道也不错，以后会常来的。',
+        name: 'Great value-for-money dinner',
+        content: 'It was my first time at this restaurant, and I didn’t expect it to be such great value! The portions were generous and the food tasted great. I will definitely be coming back.',
         score: 3.5,
         createdAt: '2025-06-05',
         updatedAt: '2025-06-05',
@@ -51,8 +53,8 @@ const fetchMerchantPosts = async (merchantId) => {
         authorId: 4,
         circleId: 4,
         merchantId: merchantId,
-        name: '早餐新选择',
-        content: '发现了一家很棒的早餐店，他们的三明治和咖啡搭配得非常好，价格也很实惠。',
+        name: 'A new breakfast option',
+        content: 'I discovered a great new breakfast spot—their sandwiches and coffee make a perfect combo, and the prices are very reasonable.',
         score: 4.2,
         createdAt: '2025-06-01',
         updatedAt: '2025-06-01',
@@ -61,6 +63,15 @@ const fetchMerchantPosts = async (merchantId) => {
         images: []
       }
     ];
+    // const data = {
+    //   merchantId,
+    //   circleId,
+    //   page: 1,
+    //   size:99999
+    // }
+    // api.post('/api/posts/list', data).then(res => {
+    //   console.log('res is',res)
+    // })
   } catch (error) {
     console.error('获取帖子数据失败:', error);
     return [];
@@ -68,6 +79,8 @@ const fetchMerchantPosts = async (merchantId) => {
 };
 
 const PostItem = ({ post }) => {
+  const [isOpenRec, setIsOpenRec] = useState(false);
+
   const route = useRoute();
   const navigation = useNavigation();
 
@@ -81,7 +94,14 @@ const PostItem = ({ post }) => {
   };
 
   const onLikePosts = () => {
-
+    // const flag = true
+    // const url = flag ? '/api/posts/like' : '/api/posts/unlike'
+    // api.post(url, { postId: post.id }).then(res => {
+    //   console.log('res is',res)
+    // })
+  }
+  const onCloseRec = () => {
+    setIsOpenRec(false)
   }
   
   const renderImages = () => {
@@ -154,7 +174,7 @@ const PostItem = ({ post }) => {
         <Text style={styles.actionButtonIcon}>📖</Text> View This Post Detail
       </Text>
     </TouchableOpacity>
-      
+      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec}  type={'edit'} item={post} />}
     </View>
   );
 };
@@ -162,6 +182,7 @@ const PostItem = ({ post }) => {
 const MerchantDetailScreen = () => {
   const route = useRoute();
   const merchantId = route.params?.item?.merchantId || 1;
+  const circleId = route.params?.item?.circleId || 1;
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -177,7 +198,7 @@ const MerchantDetailScreen = () => {
       try {
         setIsLoading(true);
         // 获取商家帖子
-        const postsData = await fetchMerchantPosts(merchantId);
+        const postsData = await fetchMerchantPosts(merchantId,circleId);
         setPosts(postsData);
         
       } catch (err) {

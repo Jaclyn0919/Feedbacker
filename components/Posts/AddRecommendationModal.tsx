@@ -1,3 +1,4 @@
+import { post } from '@/utils/http';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -23,7 +24,7 @@ import TagList from './components/TagComponent';
 type formDataType = {
   name: string;
   type: string;
-  location: string;
+  address: string;
   score: string;
   priceLevel: string;
   content: string;
@@ -37,7 +38,6 @@ type Props = {
   onCloseRec: () => void;
   type: 'add' | 'edit';
   item?: any; // 编辑时传入的项目数据
-  circleList?:any
 };
 
 const { width, height } = Dimensions.get('window');
@@ -66,11 +66,11 @@ const priceLevels = [
   { label: '$$$$Very Expensive', value: '4' },
 ];
 
-const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }: Props) => {
+const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item }: Props) => {
   const [formData, setFormData] = useState<formDataType>({
     name: '',
     type: 'food',
-    location: '',
+    address: '',
     score: '4',
     priceLevel: '2',
     content: '',
@@ -81,8 +81,16 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [merchantId, setMerchantId] = useState<any>(null);
   const [merchantList, setMerchantList] = useState<any>([]);
+  const [circleList, setCircleList] = useState<any>([]);
   const [circleId, setCircleId] = useState<any>(null);
   const [pickedImages, setPickedImages] = useState<any>([]);
+
+  const getCircleList = () => {
+    console.log('getCircleList exe')
+    post('/api/circles/mine').then(res => {
+      setCircleList(res.data);
+    });
+  };
 
   // 处理表单初始化 - 根据type和item填充数据
   useEffect(() => {
@@ -92,7 +100,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }
       setFormData({
         name: item.name || '',
         type: item.type || 'food',
-        location: item.address || '',
+        address: item.address || '',
         score: item.score?.toString() || '4',
         priceLevel: item.priceLevel?.toString() || '2',
         content: item.content || '',
@@ -117,8 +125,8 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }
       // 新增模式下重置表单
       setFormData({
         name: '',
+        address: '',
         type: 'food',
-        location: '',
         score: '4',
         priceLevel: '2',
         content: '',
@@ -149,7 +157,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }
   // 处理类型选择
   const handleSelectMechant = (value: any) => {
     merchantItem = getMechantById(value);
-    setFormData({ ...formData, location: merchantItem?.address });
+    setFormData({ ...formData, address: merchantItem?.address });
     setMerchantId(value);
   };
 
@@ -222,11 +230,11 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }
   // 验证表单
   const validateForm = () => {
     merchantItem = getMechantById();
-    if (!Object.values(merchantItem).length) {
+    if (!merchantItem || !Object.values(merchantItem).length) {
       Alert.alert('Form Error', 'Please choose a merchant');
       return false;
     }
-    if (!formData.name || !formData.location || !formData.content) {
+    if (!formData.name || !formData.address || !formData.content) {
       Alert.alert('Form Error', 'Please fill in all required fields');
       return false;
     }
@@ -246,7 +254,7 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }
         latitude: merchantItem?.latitude,
         longitude: merchantItem?.longitude,
         externalId: merchantItem?.externalId,
-        circleId: getCircleById()?.id,
+        circleId: circleId,
         content: formData.content,
         score: formData.score,
         tags: selectedTags,
@@ -415,8 +423,8 @@ const AddRecommendationModal = ({ isOpenRec, onCloseRec, type, item,circleList }
                     <TextInput
                       style={styles.input}
                       placeholder="Auto fill,do not edit"
-                      value={formData.location}
-                      onChangeText={(text) => handleInputChange('location', text)}
+                      value={formData.address}
+                      onChangeText={(text) => handleInputChange('address', text)}
                       multiline={true} // 启用多行输入
                       disabled={true}
                       numberOfLines={4} // 默认显示的行数

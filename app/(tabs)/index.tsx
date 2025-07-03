@@ -54,8 +54,7 @@ const Index = () => {
   const getCircleList = () => {
     console.log('getCircleList exe')
     post('/api/circles/mine').then(res => {
-      // setCircleList(res.data);
-      console.log('res is',res)
+      setCircleList(res.data);
     });
   };
   // getCircleList()
@@ -98,13 +97,13 @@ const Index = () => {
             <Picker.Item 
               label='Select circle to filter merchants'
                 />
-              {/* {circleList.map(type => (
+              {circleList.map(type => (
                 <Picker.Item 
                   label={type.label} 
                   value={type.value} 
                   key={type.value} 
                 />
-              ))} */}
+              ))}
             </Picker>
          </View>
           <View style={styles.searchInputContainer}>
@@ -162,7 +161,7 @@ const Index = () => {
         </View>
       )}
      
-      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec} type='add' item={null} circleList={circleList}/>}
+      {isOpenRec  && <AddRecommendationModal isOpenRec={isOpenRec} onCloseRec={onCloseRec} type='add' item={null}/>}
       </ScrollView> 
     </SafeAreaView>
   );
