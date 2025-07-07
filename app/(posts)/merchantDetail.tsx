@@ -110,7 +110,8 @@ const PostItem = ({ post }) => {
 
       <TouchableOpacity onPress={onViewDetail}>
         <Text style={styles.actionButtonText}>
-          <Feather name="book-open" size={14} /> View Post Details
+          {/* <Feather name="book-open" size={14} />
+          View Post Details */}
         </Text>
       </TouchableOpacity>
     </View>

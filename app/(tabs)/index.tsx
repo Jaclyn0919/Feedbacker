@@ -31,7 +31,7 @@ const Index = () => {
 
   const recommendations = [
     {
-      name: 'Porcine',
+      name: '1',
       type: 'food',
       address: 'Sydney, Australia',
       score: '4',
@@ -49,7 +49,7 @@ const Index = () => {
       updatedAt: '2025-06-26T10:45:00Z',
     },
     {
-      name: 'Porcine',
+      name: '2',
       type: 'food',
       address: 'Sydney, Australia',
       score: '4',
@@ -67,7 +67,7 @@ const Index = () => {
       updatedAt: '2025-06-26T10:45:00Z',
     },
     {
-      name: 'Porcine',
+      name: '3',
       type: 'food',
       address: 'Sydney, Australia',
       score: '4',
